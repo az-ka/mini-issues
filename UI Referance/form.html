@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiniReport — Buat Laporan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface-2: #1c2330;
+    --border: #30363d;
+    --border-muted: #21262d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --text-subtle: #484f58;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --red: #f85149;
+    --yellow: #d29922;
+    --purple: #bc8cff;
+    --orange: #ffa657;
+    --radius: 6px;
+    --font: 'IBM Plex Sans', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+    padding-bottom: 48px;
+  }
+
+  .layout {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+
+  nav {
+    border-bottom: 1px solid var(--border-muted);
+    padding: 12px 0;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 10;
+  }
+  nav .inner {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .brand {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 15px;
+    color: var(--text);
+    text-decoration: none;
+    letter-spacing: -0.3px;
+  }
+  .brand span { color: var(--accent); }
+  .nav-right { display: flex; align-items: center; gap: 12px; }
+  .notif-btn {
+    position: relative;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+  }
+  .notif-btn .badge {
+    position: absolute;
+    top: 0; right: 0;
+    width: 8px; height: 8px;
+    background: var(--red);
+    border-radius: 50%;
+    border: 2px solid var(--bg);
+  }
+  .avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+
+  /* Breadcrumb */
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 16px 0 4px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .breadcrumb a { color: var(--text-muted); text-decoration: none; }
+  .breadcrumb a:hover { color: var(--accent); }
+  .breadcrumb .sep { color: var(--text-subtle); }
+  .breadcrumb .current { color: var(--text); }
+
+  /* Page header */
+  .page-header {
+    padding: 8px 0 20px;
+  }
+  .page-header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+  }
+  .page-header p {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin-top: 2px;
+  }
+
+  /* Type selector */
+  .type-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .type-card {
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-muted);
+    background: var(--surface);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .type-card:hover { border-color: var(--border); }
+  .type-card.selected-bug { border-color: var(--red); background: rgba(248,81,73,0.05); }
+  .type-card.selected-feature { border-color: var(--purple); background: rgba(188,140,255,0.05); }
+  .type-icon {
+    width: 32px; height: 32px;
+    border-radius: var(--radius);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .type-icon.bug { background: rgba(248,81,73,0.12); }
+  .type-icon.feature { background: rgba(188,140,255,0.12); }
+  .type-label { font-size: 13px; font-weight: 500; }
+  .type-desc { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+  /* Section */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border-muted);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: var(--mono);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-muted);
+  }
+
+  /* Form elements */
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+  }
+  label .req { color: var(--red); margin-left: 2px; }
+  label .hint { font-weight: 400; color: var(--text-subtle); margin-left: 4px; font-size: 11px; }
+
+  input[type="text"],
+  select,
+  textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border-muted);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 13px;
+    padding: 8px 10px;
+    outline: none;
+    resize: vertical;
+    transition: border-color 0.1s;
+  }
+  input[type="text"]:focus,
+  select:focus,
+  textarea:focus { border-color: var(--accent); }
+  input[type="text"]::placeholder,
+  textarea::placeholder { color: var(--text-subtle); }
+
+  textarea { min-height: 80px; line-height: 1.5; }
+  textarea.tall { min-height: 100px; }
+
+  /* Two col */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  /* Result boxes */
+  .result-box {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .result-field { }
+  .result-field label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+  }
+  .dot-green { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+  .dot-red { width: 6px; height: 6px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
+
+  /* Similar reports */
+  .similar-box {
+    background: var(--bg);
+    border: 1px solid var(--border-muted);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    margin-top: 6px;
+  }
+  .similar-box .sim-title {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .sim-item {
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border-muted);
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+  .sim-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .sim-item:hover { color: var(--accent); }
+  .sim-badge {
+    font-size: 10px;
+    font-family: var(--mono);
+    padding: 1px 5px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .sim-bug { background: rgba(248,81,73,0.12); color: var(--red); }
+  .sim-feat { background: rgba(188,140,255,0.12); color: var(--purple); }
+  .sim-status { color: var(--text-subtle); font-size: 11px; margin-left: auto; white-space: nowrap; }
+
+  /* File upload */
+  .upload-area {
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    background: var(--bg);
+  }
+  .upload-area:hover { border-color: var(--accent); }
+  .upload-area .icon { font-size: 20px; color: var(--text-subtle); margin-bottom: 6px; }
+  .upload-area p { font-size: 12px; color: var(--text-muted); }
+  .upload-area span { color: var(--accent); cursor: pointer; }
+  .upload-area .formats { font-size: 11px; color: var(--text-subtle); margin-top: 4px; }
+
+  /* Action bar */
+  .action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0 0;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .action-left { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
+  .action-left .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+  .action-right { display: flex; gap: 8px; }
+
+  .btn {
+    padding: 7px 14px;
+    border-radius: var(--radius);
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+  }
+  .btn-ghost {
+    background: none;
+    border: 1px solid var(--border-muted);
+    color: var(--text-muted);
+  }
+  .btn-ghost:hover { border-color: var(--border); color: var(--text); }
+  .btn-outline {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .btn-outline:hover { color: var(--text); }
+  .btn-primary {
+    background: var(--accent);
+    color: #0d1117;
+    font-weight: 600;
+  }
+  .btn-primary:hover { background: #79bbff; }
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Type-specific sections - hidden by default */
+  .bug-only, .feature-only { display: none; }
+  .show-bug .bug-only { display: block; }
+  .show-feature .feature-only { display: block; }
+
+  svg { display: block; }
+
+  @media (max-width: 480px) {
+    .two-col, .result-box { grid-template-columns: 1fr; }
+    .type-selector { grid-template-columns: 1fr 1fr; }
+    .action-right { width: 100%; }
+    .btn { flex: 1; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="home.html" class="brand">mini<span>report</span></a>
+    <div class="nav-right">
+      <button class="notif-btn" aria-label="Notifikasi">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 16a2 2 0 001.985-1.75c.017-.137-.097-.25-.235-.25h-3.5c-.138 0-.252.113-.235.25A2 2 0 008 16zm.25-14.75V.75a.75.75 0 00-1.5 0v.5C4.25 1.672 3 3.626 3 6v2.388l-1.548 2.322A.75.75 0 002 12h12a.75.75 0 00.548-1.29L13 8.388V6c0-2.374-1.25-4.328-3.25-4.75v-.5z"/>
+        </svg>
+        <span class="badge"></span>
+      </button>
+      <div class="avatar">AZ</div>
+    </div>
+  </div>
+</nav>
+
+<div class="layout">
+
+  <div class="breadcrumb">
+    <a href="home.html">Home</a>
+    <span class="sep">/</span>
+    <span class="current">Buat Laporan</span>
+  </div>
+
+  <div class="page-header">
+    <h1 id="page-title">Buat Laporan Baru</h1>
+    <p>Draft tersimpan otomatis ke browser</p>
+  </div>
+
+  <!-- Type Selector -->
+  <div class="type-selector">
+    <div class="type-card selected-bug" data-type="bug" id="card-bug">
+      <div class="type-icon bug">🐛</div>
+      <div>
+        <div class="type-label">Bug Report</div>
+        <div class="type-desc">Ada sesuatu yang rusak</div>
+      </div>
+    </div>
+    <div class="type-card" data-type="feature" id="card-feature">
+      <div class="type-icon feature">✨</div>
+      <div>
+        <div class="type-label">Feature Request</div>
+        <div class="type-desc">Butuh fitur baru</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="form-body" class="show-bug">
+
+    <!-- Section: Informasi Dasar -->
+    <div class="section">
+      <div class="section-title">Informasi Dasar</div>
+
+      <div class="field">
+        <label id="title-label">Judul Bug <span class="req">*</span></label>
+        <input type="text" id="title-input" placeholder="Deskripsikan masalah secara singkat dan jelas...">
+        <!-- Similar reports preview -->
+        <div class="similar-box" id="similar-box" style="display:none">
+          <div class="sim-title">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm9 3a1 1 0 11-2 0 1 1 0 012 0zM6.92 6.085c.081-.16.19-.299.34-.398.145-.097.371-.187.74-.187.28 0 .553.087.738.225A.613.613 0 019 6.25c0 .177-.04.264-.077.318a.956.956 0 01-.277.245c-.076.051-.158.1-.258.161l-.007.004a7.728 7.728 0 00-.313.195 2.416 2.416 0 00-.692.933.75.75 0 101.382.588 1.2 1.2 0 01.223-.31 8.318 8.318 0 01.287-.177l.006-.004c.093-.056.204-.12.313-.195.222-.149.487-.355.692-.663.21-.313.36-.702.36-1.245 0-.76-.36-1.348-.863-1.732-.51-.39-1.168-.578-1.822-.578-.769 0-1.4.22-1.859.516a2.908 2.908 0 00-.799.734.75.75 0 101.285.764z"/></svg>
+            Laporan serupa ditemukan
+          </div>
+          <div class="sim-item">
+            <span class="sim-badge sim-bug">Bug</span>
+            Payment timeout saat VA BNI checkout
+            <span class="sim-status">In Progress</span>
+          </div>
+          <div class="sim-item">
+            <span class="sim-badge sim-bug">Bug</span>
+            Gateway error di mobile checkout
+            <span class="sim-status">Resolved</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="field">
+          <label>Departemen <span class="req">*</span></label>
+          <select>
+            <option value="">Pilih departemen...</option>
+            <option>Finance</option>
+            <option>Sales</option>
+            <option>Operations</option>
+            <option>Product</option>
+            <option>Marketing</option>
+          </select>
+        </div>
+        <!-- Bug: Priority / Feature: Urgency -->
+        <div class="field bug-only">
+          <label>Prioritas <span class="req">*</span></label>
+          <select>
+            <option value="">Pilih...</option>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="blocker">🔴 Blocker</option>
+          </select>
+        </div>
+        <div class="field feature-only">
+          <label>Urgensi Bisnis <span class="req">*</span></label>
+          <select>
+            <option value="">Pilih...</option>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section Bug-specific -->
+    <div class="section bug-only">
+      <div class="section-title">Detail Bug</div>
+
+      <div class="field">
+        <label>Environment <span class="req">*</span> <span class="hint">Browser, OS, URL, Role akun</span></label>
+        <textarea placeholder="Contoh: Chrome 123 / Windows 11 / https://app.xyz/checkout / Role: Finance Staff"></textarea>
+      </div>
+
+      <div class="two-col">
+        <div class="field">
+          <label>Frekuensi <span class="req">*</span></label>
+          <select>
+            <option value="">Pilih...</option>
+            <option>Selalu (100%)</option>
+            <option>Sering (>50%)</option>
+            <option>Kadang (~50%)</option>
+            <option>Jarang (<50%)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <div style="padding-top:6px; font-size:12px; color: var(--text-subtle);">Seberapa sering bug ini terjadi?</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Langkah Reproduksi <span class="req">*</span></label>
+        <textarea class="tall" placeholder="1. Buka halaman checkout&#10;2. Pilih metode VA BCA&#10;3. Klik bayar&#10;4. Tunggu 5 detik..."></textarea>
+      </div>
+
+      <div class="result-box">
+        <div class="result-field">
+          <label><span class="dot-green"></span> Hasil yang Diharapkan <span class="req">*</span></label>
+          <textarea placeholder="Transaksi berhasil dan redirect ke halaman sukses..."></textarea>
+        </div>
+        <div class="result-field">
+          <label><span class="dot-red"></span> Hasil Aktual <span class="req">*</span></label>
+          <textarea placeholder="Muncul error 504 Gateway Timeout..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section Feature-specific -->
+    <div class="section feature-only">
+      <div class="section-title">Detail Fitur</div>
+
+      <div class="field">
+        <label>User Story <span class="req">*</span></label>
+        <textarea placeholder="Sebagai [Finance Staff], saya ingin [mengekspor data ke Excel] agar [bisa membuat laporan bulanan lebih cepat]."></textarea>
+      </div>
+
+      <div class="field">
+        <label>Masalah Saat Ini <span class="req">*</span></label>
+        <textarea placeholder="Saat ini saya harus copy-paste data satu per satu secara manual ke spreadsheet, memakan waktu 2-3 jam per laporan..."></textarea>
+      </div>
+
+      <div class="field">
+        <label>Acceptance Criteria <span class="req">*</span> <span class="hint">Kapan fitur ini dianggap selesai?</span></label>
+        <textarea class="tall" placeholder="- User bisa klik tombol Export di halaman dashboard&#10;- File .xlsx terdownload dalam &lt; 3 detik&#10;- Kolom: Tanggal, Nama, Jumlah, Status..."></textarea>
+      </div>
+    </div>
+
+    <!-- Section: Bukti Visual -->
+    <div class="section">
+      <div class="section-title" id="upload-title">Bukti Visual</div>
+      <div class="upload-area" onclick="document.getElementById('file-input').click()">
+        <div class="icon">📎</div>
+        <p><span>Klik untuk upload</span> atau drag & drop</p>
+        <div class="formats">PNG, JPG, GIF · Maks 10MB · <span id="upload-hint">Screenshot error</span></div>
+        <input type="file" id="file-input" style="display:none" accept="image/*,.pdf">
+      </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+      <div class="action-left">
+        <span class="dot"></span>
+        Draft tersimpan
+      </div>
+      <div class="action-right">
+        <button class="btn btn-ghost">Simpan Draf</button>
+        <button class="btn btn-primary">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M9.03 1.72a.75.75 0 010 1.06L5.06 6.75 9.03 10.72a.75.75 0 11-1.06 1.06L3.44 7.22a.75.75 0 010-1.06l4.53-4.44a.75.75 0 011.06 0z" transform="rotate(180 6 6)"/><path d="M1.5 6a.75.75 0 01.75-.75h9a.75.75 0 010 1.5h-9A.75.75 0 011.5 6z"/></svg>
+          Kirim Laporan
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  const cardBug = document.getElementById('card-bug');
+  const cardFeature = document.getElementById('card-feature');
+  const formBody = document.getElementById('form-body');
+  const pageTitle = document.getElementById('page-title');
+  const titleLabel = document.getElementById('title-label');
+  const uploadHint = document.getElementById('upload-hint');
+
+  function setType(type) {
+    if (type === 'bug') {
+      cardBug.className = 'type-card selected-bug';
+      cardFeature.className = 'type-card';
+      formBody.className = 'show-bug';
+      pageTitle.textContent = 'Buat Bug Report';
+      titleLabel.innerHTML = 'Judul Bug <span class="req">*</span>';
+      uploadHint.textContent = 'Screenshot error';
+    } else {
+      cardFeature.className = 'type-card selected-feature';
+      cardBug.className = 'type-card';
+      formBody.className = 'show-feature';
+      pageTitle.textContent = 'Feature Request';
+      titleLabel.innerHTML = 'Nama Fitur <span class="req">*</span>';
+      uploadHint.textContent = 'Alur logika / mockup (Figma, Excalidraw)';
+    }
+  }
+
+  cardBug.addEventListener('click', () => setType('bug'));
+  cardFeature.addEventListener('click', () => setType('feature'));
+
+  // Similar reports preview on title input
+  const titleInput = document.getElementById('title-input');
+  const similarBox = document.getElementById('similar-box');
+  titleInput.addEventListener('input', () => {
+    similarBox.style.display = titleInput.value.length > 5 ? 'block' : 'none';
+  });
+
+  // Auto-save to localStorage simulation
+  titleInput.addEventListener('input', () => {
+    localStorage.setItem('draft_title', titleInput.value);
+  });
+
+  // Restore draft
+  const saved = localStorage.getItem('draft_title');
+  if (saved) titleInput.value = saved;
+</script>
+</body>
+</html>
