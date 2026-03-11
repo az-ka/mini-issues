@@ -1,59 +1,81 @@
 <script lang="ts">
-	import { Show, SignInButton } from 'svelte-clerk/client';
-	import { useClerkContext } from 'svelte-clerk/client';
-	import { useQuery } from 'convex-svelte';
-	import { api } from '../convex/_generated/api';
+	import Input from '$lib/components/ui/Input.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 
-	const ctx = useClerkContext();
-	
-	// Get current user data from Convex reactively
-	const userQuery = $derived(useQuery(api.users.currentUser, {}));
-	const userData = $derived(userQuery?.data);
-
-	async function handleSignOut() {
-		if (ctx.clerk) {
-			await ctx.clerk.signOut();
-		}
-	}
+	let email = $state('');
 </script>
 
-<div class="flex min-h-dvh flex-col items-center justify-center gap-6 p-4 text-center">
-	<h1 class="text-4xl font-bold tracking-tight text-zinc-900">Mini Issues</h1>
-	<p class="max-w-md text-zinc-600">
-		A simple issue tracker built with Svelte 5, Convex, and Clerk.
-	</p>
+<div class="flex min-h-dvh items-center justify-center p-4">
+	<div class="w-full max-w-sm">
 
-	<div class="mt-4">
-		<Show when="signed-out">
-			<div class="flex flex-col gap-2">
-				<p class="text-sm text-zinc-500">You are not signed in.</p>
-				<SignInButton class="inline-flex h-10 items-center justify-center rounded-md bg-zinc-900 px-8 text-sm font-medium text-zinc-50 transition-colors hover:bg-zinc-900/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950" />
+		<!-- Brand -->
+		<div class="mb-8 text-center">
+			<div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-accent/20 bg-accent/10">
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="22"
+					height="22"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					class="text-accent"
+				>
+					<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+				</svg>
 			</div>
-		</Show>
+			<h1 class="text-2xl font-bold text-foreground">Mini Issues</h1>
+			<p class="mt-1.5 text-sm text-muted">Laporkan masalah dengan mudah</p>
+		</div>
 
-		<Show when="signed-in">
-			<div class="flex flex-col items-center gap-4">
-				{#if userData}
-					<div class="flex items-center gap-3 rounded-full border border-zinc-200 bg-white p-1.5 pl-4 shadow-sm">
-						<span class="text-sm font-medium text-zinc-700">
-							{userData.name || 'User'} 
-							<span class="ml-1 text-[10px] uppercase tracking-wider text-zinc-400">({userData.role})</span>
-						</span>
-						<button 
-							type="button"
-							onclick={handleSignOut}
-							class="rounded-full bg-zinc-900 px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-zinc-800"
-						>
-							Sign Out
-						</button>
-					</div>
-				{:else}
-					<div class="flex items-center gap-2 text-sm text-zinc-400">
-						<div class="h-2 w-2 animate-bounce rounded-full bg-zinc-300"></div>
-						Loading profile...
-					</div>
-				{/if}
+		<!-- Card -->
+		<div class="rounded-2xl border border-border bg-surface p-6">
+			<div class="mb-5">
+				<label for="email" class="mb-1.5 block text-sm font-medium text-foreground">
+					Email kantor
+				</label>
+				<Input
+					id="email"
+					type="email"
+					bind:value={email}
+					placeholder="nama@perusahaan.com"
+				/>
 			</div>
-		</Show>
+
+			<Button type="submit" size="lg" class="w-full">
+				Masuk
+			</Button>
+
+			<p class="mt-4 text-center text-xs text-muted">
+				Belum punya akses?
+				<a href="mailto:admin@perusahaan.com" aria-label="Hubungi admin melalui email" class="text-accent hover:underline">Hubungi admin</a>
+			</p>
+		</div>
+
+		<!-- Error state (email not in whitelist) -->
+		<div class="mt-3 flex items-start gap-2.5 rounded-xl border border-danger/20 bg-danger/5 px-4 py-3">
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="16"
+				height="16"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				class="mt-0.5 shrink-0 text-danger"
+			>
+				<circle cx="12" cy="12" r="10" />
+				<line x1="12" y1="8" x2="12" y2="12" />
+				<line x1="12" y1="16" x2="12.01" y2="16" />
+			</svg>
+			<p class="text-xs text-danger/90">
+				Email kamu belum terdaftar. Hubungi admin untuk mendapatkan akses.
+			</p>
+		</div>
+
 	</div>
 </div>
