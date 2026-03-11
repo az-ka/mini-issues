@@ -1,7 +1,14 @@
 <script lang="ts">
+	import { useClerkContext } from 'svelte-clerk/client';
 	import Button from '$lib/components/ui/Button.svelte';
-	import Badge from '$lib/components/ui/Badge.svelte';
 	import TicketCard from '$lib/components/TicketCard.svelte';
+
+	const ctx = useClerkContext();
+
+	const user = $derived(ctx.user);
+	const displayName = $derived(user?.firstName ?? user?.fullName?.split(' ')[0] ?? 'Kamu');
+	const initials = $derived(displayName.charAt(0).toUpperCase());
+	const avatarUrl = $derived(user?.imageUrl);
 
 	const mockTickets = [
 		{
@@ -32,11 +39,12 @@
 </script>
 
 <div class="mx-auto min-h-dvh max-w-2xl px-4 py-8">
-
 	<!-- Top bar -->
 	<div class="mb-8 flex items-center justify-between">
 		<div class="flex items-center gap-2.5">
-			<div class="flex h-8 w-8 items-center justify-center rounded-lg border border-accent/20 bg-accent/10">
+			<div
+				class="flex h-8 w-8 items-center justify-center rounded-lg border border-accent/20 bg-accent/10"
+			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					width="16"
@@ -55,12 +63,27 @@
 			<span class="text-sm font-semibold text-foreground">Mini Issues</span>
 		</div>
 
-		<!-- User avatar placeholder -->
+		<!-- User info -->
 		<div class="flex items-center gap-2.5">
-			<span class="text-sm text-muted">Halo, Rina</span>
-			<div class="flex h-8 w-8 items-center justify-center rounded-full bg-accent/20 text-xs font-semibold text-accent">
-				R
-			</div>
+			{#if user !== undefined}
+				<span class="text-sm text-muted">Halo, {displayName}</span>
+				{#if avatarUrl}
+					<img
+						src={avatarUrl}
+						alt={displayName}
+						class="h-8 w-8 rounded-full object-cover ring-1 ring-border"
+					/>
+				{:else}
+					<div
+						class="flex h-8 w-8 items-center justify-center rounded-full bg-accent/20 text-xs font-semibold text-accent"
+					>
+						{initials}
+					</div>
+				{/if}
+			{:else}
+				<div class="h-4 w-20 animate-pulse rounded bg-surface-2"></div>
+				<div class="h-8 w-8 animate-pulse rounded-full bg-surface-2"></div>
+			{/if}
 		</div>
 	</div>
 
@@ -119,5 +142,4 @@
 			</div>
 		{/if}
 	</div>
-
 </div>
