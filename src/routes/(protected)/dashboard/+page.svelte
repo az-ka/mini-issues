@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { useClerkContext } from 'svelte-clerk/client';
 	import Button from '$lib/components/ui/Button.svelte';
 	import TicketCard from '$lib/components/TicketCard.svelte';
@@ -9,6 +10,16 @@
 	const displayName = $derived(user?.firstName ?? user?.fullName?.split(' ')[0] ?? 'Kamu');
 	const initials = $derived(displayName.charAt(0).toUpperCase());
 	const avatarUrl = $derived(user?.imageUrl);
+	const userEmail = $derived(user?.primaryEmailAddress?.emailAddress ?? '');
+
+	let dropdownOpen = $state(false);
+
+	async function handleSignOut() {
+		const clerk = ctx.clerk;
+		if (!clerk) return;
+		await clerk.signOut();
+		goto('/');
+	}
 
 	const mockTickets = [
 		{
@@ -63,26 +74,85 @@
 			<span class="text-sm font-semibold text-foreground">Mini Issues</span>
 		</div>
 
-		<!-- User info -->
-		<div class="flex items-center gap-2.5">
+		<!-- User info + dropdown -->
+		<div class="relative">
 			{#if user !== undefined}
-				<span class="text-sm text-muted">Halo, {displayName}</span>
-				{#if avatarUrl}
-					<img
-						src={avatarUrl}
-						alt={displayName}
-						class="h-8 w-8 rounded-full object-cover ring-1 ring-border"
-					/>
-				{:else}
-					<div
-						class="flex h-8 w-8 items-center justify-center rounded-full bg-accent/20 text-xs font-semibold text-accent"
-					>
-						{initials}
-					</div>
-				{/if}
+				<button
+					type="button"
+					onclick={() => (dropdownOpen = !dropdownOpen)}
+					class="flex items-center gap-2.5 rounded-lg p-1 transition-colors hover:bg-surface-2 cursor-pointer"
+				>
+					<span class="text-sm text-muted">Halo, {displayName}</span>
+					{#if avatarUrl}
+						<img
+							src={avatarUrl}
+							alt={displayName}
+							class="h-8 w-8 rounded-full object-cover ring-1 ring-border"
+						/>
+					{:else}
+						<div
+							class="flex h-8 w-8 items-center justify-center rounded-full bg-accent/20 text-xs font-semibold text-accent"
+						>
+							{initials}
+						</div>
+					{/if}
+				</button>
 			{:else}
-				<div class="h-4 w-20 animate-pulse rounded bg-surface-2"></div>
-				<div class="h-8 w-8 animate-pulse rounded-full bg-surface-2"></div>
+				<div class="flex items-center gap-2.5">
+					<div class="h-4 w-20 animate-pulse rounded bg-surface-2"></div>
+					<div class="h-8 w-8 animate-pulse rounded-full bg-surface-2"></div>
+				</div>
+			{/if}
+
+			<!-- Backdrop -->
+			{#if dropdownOpen}
+				<button
+					type="button"
+					aria-label="Tutup menu"
+					class="fixed inset-0 z-20"
+					onclick={() => (dropdownOpen = false)}
+				></button>
+
+				<!-- Dropdown -->
+				<div
+					class="absolute top-full right-0 z-30 mt-2 w-56 overflow-hidden rounded-xl border border-border bg-surface shadow-xl"
+				>
+					<!-- User info -->
+					<div class="px-4 py-3">
+						<p class="text-sm font-medium text-foreground">{displayName}</p>
+						{#if userEmail}
+							<p class="mt-0.5 truncate text-xs text-muted">{userEmail}</p>
+						{/if}
+					</div>
+
+					<div class="h-px bg-border"></div>
+
+					<!-- Logout -->
+					<div class="p-1">
+						<button
+							type="button"
+							onclick={handleSignOut}
+							class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-danger transition-colors hover:bg-danger/10 cursor-pointer"
+						>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="15"
+								height="15"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							>
+								<path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+								<polyline points="16 17 21 12 16 7" />
+								<line x1="21" y1="12" x2="9" y2="12" />
+							</svg>
+							Keluar
+						</button>
+					</div>
+				</div>
 			{/if}
 		</div>
 	</div>
