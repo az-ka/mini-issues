@@ -1,0 +1,108 @@
+<script lang="ts">
+	import { useClerkContext } from 'svelte-clerk/client';
+	import { useQuery } from 'convex-svelte';
+	import { api } from '../../convex/_generated/api';
+	import { goto } from '$app/navigation';
+
+	interface Props {
+		children: import('svelte').Snippet;
+		data: { adminEmails: string[] };
+	}
+
+	let { children, data }: Props = $props();
+
+	const ctx = useClerkContext();
+
+	const userEmail = $derived(
+		ctx.user?.primaryEmailAddress?.emailAddress?.toLowerCase().trim() ?? null
+	);
+
+	const isAdminByEnv = $derived(
+		userEmail !== null && data.adminEmails.includes(userEmail)
+	);
+
+	// Only query whitelist if user is not already an admin via env
+	const whitelistCheck = $derived(
+		!isAdminByEnv && userEmail !== null
+			? useQuery(api.whitelist.isAllowed, { email: userEmail })
+			: null
+	);
+
+	const isAllowed = $derived(
+		isAdminByEnv ||
+		(whitelistCheck?.data === true)
+	);
+
+	const isChecking = $derived(
+		ctx.user === undefined ||
+		(!isAdminByEnv && whitelistCheck?.isLoading === true)
+	);
+
+	const isDenied = $derived(
+		!isChecking &&
+		ctx.user !== null &&
+		ctx.user !== undefined &&
+		!isAllowed &&
+		whitelistCheck?.isLoading === false
+	);
+
+	$effect(() => {
+		if (!isDenied) return;
+		const clerk = ctx.clerk;
+		if (!clerk) return;
+		clerk.signOut().then(() => goto('/?error=not_whitelisted'));
+	});
+</script>
+
+{#if isChecking}
+	<!-- Checking access — brief loading state -->
+	<div class="flex min-h-dvh items-center justify-center">
+		<div class="flex flex-col items-center gap-3">
+			<div class="flex h-10 w-10 items-center justify-center rounded-xl border border-accent/20 bg-accent/10">
+				<svg
+					class="animate-spin text-accent"
+					xmlns="http://www.w3.org/2000/svg"
+					width="18"
+					height="18"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
+					<path d="M21 12a9 9 0 11-6.219-8.56" />
+				</svg>
+			</div>
+			<p class="text-sm text-muted">Memeriksa akses...</p>
+		</div>
+	</div>
+{:else if isDenied}
+	<!-- Briefly shown before redirect/signout -->
+	<div class="flex min-h-dvh items-center justify-center p-4">
+		<div class="w-full max-w-sm text-center">
+			<div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-danger/20 bg-danger/10">
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="22"
+					height="22"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					class="text-danger"
+				>
+					<circle cx="12" cy="12" r="10" />
+					<line x1="12" y1="8" x2="12" y2="12" />
+					<line x1="12" y1="16" x2="12.01" y2="16" />
+				</svg>
+			</div>
+			<p class="text-sm font-medium text-foreground">Akses ditolak</p>
+			<p class="mt-1 text-xs text-muted">Email kamu belum terdaftar. Mengarahkan ulang...</p>
+		</div>
+	</div>
+{:else}
+	{@render children()}
+{/if}

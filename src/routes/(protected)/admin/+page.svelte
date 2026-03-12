@@ -1,26 +1,35 @@
 <script lang="ts">
+	import { useClerkContext } from 'svelte-clerk/client';
+	import { useQuery, useMutation } from 'convex-svelte';
+	import { api } from '../../../convex/_generated/api';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 
-	interface WhitelistEntry {
-		id: string;
-		name: string;
-		email: string;
-		addedAt: string;
-	}
+	const ctx = useClerkContext();
 
-	let entries = $state<WhitelistEntry[]>([
-		{ id: '1', name: 'Rina Wulandari', email: 'rina@perusahaan.com', addedAt: '1 Jan 2025' },
-		{ id: '2', name: 'Budi Santoso', email: 'budi@perusahaan.com', addedAt: '3 Jan 2025' },
-		{ id: '3', name: 'Siti Rahayu', email: 'siti@perusahaan.com', addedAt: '10 Jan 2025' },
-		{ id: '4', name: 'Agus Permana', email: 'agus@perusahaan.com', addedAt: '15 Jan 2025' },
-		{ id: '5', name: 'Dewi Kusuma', email: 'dewi@perusahaan.com', addedAt: '20 Feb 2025' }
-	]);
+	const userEmail = $derived(
+		ctx.user?.primaryEmailAddress?.emailAddress?.toLowerCase().trim() ?? ''
+	);
 
+	// Queries & mutations
+	const whitelistQuery = useQuery(api.whitelist.list, {});
+	const addMutation = useMutation(api.whitelist.add);
+	const removeMutation = useMutation(api.whitelist.remove);
+
+	const entries = $derived(whitelistQuery.data ?? []);
+	const isLoading = $derived(whitelistQuery.isLoading);
+
+	// Form state
 	let newName = $state('');
 	let newEmail = $state('');
+	let addError = $state('');
+	let isAdding = $state(false);
+
+	// Confirm delete state
 	let confirmDeleteId = $state<string | null>(null);
+
+	// Search
 	let search = $state('');
 
 	const filteredEntries = $derived(
@@ -31,90 +40,153 @@
 		)
 	);
 
-	function addEntry() {
-		if (!newName.trim() || !newEmail.trim()) return;
-		entries = [
-			...entries,
-			{
-				id: crypto.randomUUID(),
-				name: newName.trim(),
-				email: newEmail.trim(),
-				addedAt: new Date().toLocaleDateString('id-ID', {
-					day: 'numeric',
-					month: 'short',
-					year: 'numeric'
-				})
-			}
-		];
-		newName = '';
-		newEmail = '';
-	}
-
-	function deleteEntry(id: string) {
-		entries = entries.filter((e) => e.id !== id);
-		confirmDeleteId = null;
-	}
-
 	const isFormValid = $derived(newName.trim().length > 0 && newEmail.trim().includes('@'));
+
+	function formatDate(timestamp: number): string {
+		return new Date(timestamp).toLocaleDateString('id-ID', {
+			day: 'numeric',
+			month: 'short',
+			year: 'numeric'
+		});
+	}
+
+	async function handleAdd() {
+		if (!isFormValid || isAdding) return;
+		isAdding = true;
+		addError = '';
+
+		try {
+			await addMutation({ email: newEmail.trim(), name: newName.trim() });
+			newName = '';
+			newEmail = '';
+		} catch (err) {
+			addError = err instanceof Error ? err.message : 'Gagal menambahkan email. Coba lagi.';
+		} finally {
+			isAdding = false;
+		}
+	}
+
+	async function handleDelete(id: string) {
+		try {
+			await removeMutation({ id: id as never });
+			confirmDeleteId = null;
+		} catch {
+			// silently fail — Convex will retry
+		}
+	}
+
+	function handleAddKeydown(e: KeyboardEvent) {
+		if (e.key === 'Enter' && isFormValid) handleAdd();
+	}
 </script>
 
 <div class="mx-auto min-h-dvh max-w-2xl px-4 py-8">
-	<PageHeader title="Admin — Whitelist Email" backHref="/dashboard" backLabel="Kembali ke Dashboard">
+	<PageHeader
+		title="Admin — Whitelist Email"
+		backHref="/dashboard"
+		backLabel="Kembali ke Dashboard"
+	>
 		{#snippet right()}
 			<span
 				class="rounded-full border border-accent/20 bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent"
 			>
-				{entries.length} email terdaftar
+				{entries.length} terdaftar
 			</span>
 		{/snippet}
 	</PageHeader>
+
+	<!-- Admin badge -->
+	{#if userEmail}
+		<div
+			class="mb-6 flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5"
+		>
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="14"
+				height="14"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				class="shrink-0 text-accent"
+			>
+				<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+			</svg>
+			<span class="text-xs text-muted">
+				Login sebagai admin: <span class="font-medium text-foreground">{userEmail}</span>
+			</span>
+		</div>
+	{/if}
 
 	<!-- Add email form -->
 	<div class="mb-6 rounded-2xl border border-border bg-surface p-5">
 		<p class="mb-4 text-sm font-semibold text-foreground">Tambah Email Baru</p>
 
-		<div class="flex flex-col gap-3">
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div onkeydown={handleAddKeydown} class="flex flex-col gap-3">
 			<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 				<div>
-					<label for="new-name" class="mb-1.5 block text-xs font-medium text-muted">
-						Nama
-					</label>
+					<label for="new-name" class="mb-1.5 block text-xs font-medium text-muted">Nama</label>
 					<Input
 						id="new-name"
 						bind:value={newName}
 						placeholder="Nama lengkap"
+						disabled={isAdding}
 					/>
 				</div>
 				<div>
-					<label for="new-email" class="mb-1.5 block text-xs font-medium text-muted">
-						Email
-					</label>
+					<label for="new-email" class="mb-1.5 block text-xs font-medium text-muted">Email</label>
 					<Input
 						id="new-email"
 						type="email"
 						bind:value={newEmail}
 						placeholder="nama@perusahaan.com"
+						disabled={isAdding}
 					/>
 				</div>
 			</div>
 
+			{#if addError}
+				<p class="text-xs text-danger">{addError}</p>
+			{/if}
+
 			<div class="flex justify-end">
-				<Button disabled={!isFormValid} onclick={addEntry}>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="14"
-						height="14"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					>
-						<line x1="12" y1="5" x2="12" y2="19" />
-						<line x1="5" y1="12" x2="19" y2="12" />
-					</svg>
-					Tambah Email
+				<Button disabled={!isFormValid || isAdding} onclick={handleAdd}>
+					{#if isAdding}
+						<svg
+							class="animate-spin"
+							xmlns="http://www.w3.org/2000/svg"
+							width="14"
+							height="14"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						>
+							<path d="M21 12a9 9 0 11-6.219-8.56" />
+						</svg>
+						Menambahkan...
+					{:else}
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="14"
+							height="14"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						>
+							<line x1="12" y1="5" x2="12" y2="19" />
+							<line x1="5" y1="12" x2="19" y2="12" />
+						</svg>
+						Tambah Email
+					{/if}
 				</Button>
 			</div>
 		</div>
@@ -132,7 +204,7 @@
 			stroke-width="2"
 			stroke-linecap="round"
 			stroke-linejoin="round"
-			class="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted"
+			class="absolute top-1/2 left-3.5 -translate-y-1/2 text-muted"
 		>
 			<circle cx="11" cy="11" r="8" />
 			<line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -141,12 +213,18 @@
 			type="text"
 			bind:value={search}
 			placeholder="Cari nama atau email..."
-			class="w-full rounded-lg border border-border bg-surface-2 py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted/60 transition-colors focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/15"
+			class="w-full rounded-lg border border-border bg-surface-2 py-2.5 pr-4 pl-10 text-sm text-foreground transition-colors placeholder:text-muted/60 focus:border-accent/50 focus:ring-2 focus:ring-accent/15 focus:outline-none"
 		/>
 	</div>
 
 	<!-- Table -->
-	{#if filteredEntries.length === 0}
+	{#if isLoading}
+		<div class="flex flex-col gap-2">
+			{#each [1, 2, 3] as i (i)}
+				<div class="h-14 animate-pulse rounded-xl bg-surface"></div>
+			{/each}
+		</div>
+	{:else if filteredEntries.length === 0}
 		<div class="rounded-xl border border-border bg-surface py-16 text-center">
 			<p class="text-sm text-muted">
 				{search ? 'Tidak ada email yang cocok.' : 'Belum ada email terdaftar.'}
@@ -163,31 +241,30 @@
 		</div>
 	{:else}
 		<div class="overflow-hidden rounded-xl border border-border bg-surface">
-			<!-- Table header -->
+			<!-- Header -->
 			<div
 				class="grid grid-cols-[1fr_1fr_auto_auto] items-center gap-4 border-b border-border bg-surface-2 px-4 py-2.5"
 			>
-				<span class="text-xs font-semibold uppercase tracking-wider text-muted">Nama</span>
-				<span class="text-xs font-semibold uppercase tracking-wider text-muted">Email</span>
-				<span class="text-xs font-semibold uppercase tracking-wider text-muted">Ditambahkan</span>
-				<span class="text-xs font-semibold uppercase tracking-wider text-muted"></span>
+				<span class="text-xs font-semibold tracking-wider text-muted uppercase">Nama</span>
+				<span class="text-xs font-semibold tracking-wider text-muted uppercase">Email</span>
+				<span class="text-xs font-semibold tracking-wider text-muted uppercase">Ditambahkan</span>
+				<span></span>
 			</div>
 
 			<!-- Rows -->
-			{#each filteredEntries as entry (entry.id)}
+			{#each filteredEntries as entry (entry._id)}
 				<div
-					class="grid grid-cols-[1fr_1fr_auto_auto] items-center gap-4 border-b border-border px-4 py-3 last:border-b-0 transition-colors hover:bg-surface-2"
+					class="grid grid-cols-[1fr_1fr_auto_auto] items-center gap-4 border-b border-border px-4 py-3 transition-colors last:border-b-0 hover:bg-surface-2"
 				>
 					<span class="truncate text-sm font-medium text-foreground">{entry.name}</span>
 					<span class="truncate text-sm text-muted">{entry.email}</span>
-					<span class="whitespace-nowrap text-xs text-muted">{entry.addedAt}</span>
+					<span class="text-xs whitespace-nowrap text-muted">{formatDate(entry.addedAt)}</span>
 
-					<!-- Delete -->
-					{#if confirmDeleteId === entry.id}
+					{#if confirmDeleteId === entry._id}
 						<div class="flex items-center gap-2">
 							<button
 								type="button"
-								onclick={() => deleteEntry(entry.id)}
+								onclick={() => handleDelete(entry._id)}
 								class="rounded px-2 py-1 text-xs font-medium text-danger transition-colors hover:bg-danger/10"
 							>
 								Hapus
@@ -203,9 +280,9 @@
 					{:else}
 						<button
 							type="button"
-							onclick={() => (confirmDeleteId = entry.id)}
-							class="rounded p-1.5 text-muted transition-colors hover:bg-danger/10 hover:text-danger"
+							onclick={() => (confirmDeleteId = entry._id)}
 							aria-label="Hapus {entry.name}"
+							class="rounded p-1.5 text-muted transition-colors hover:bg-danger/10 hover:text-danger"
 						>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -254,8 +331,11 @@
 			<line x1="12" y1="16" x2="12.01" y2="16" />
 		</svg>
 		<p class="text-xs leading-relaxed text-muted">
-			Hanya email yang terdaftar di sini yang bisa mengakses Mini Issues. Menghapus email akan
-			mencabut akses pengguna tersebut saat login berikutnya.
+			Hanya email yang terdaftar di sini yang bisa mengakses Mini Issues. Admin ditentukan lewat
+			environment variable <code class="rounded bg-surface-2 px-1 py-0.5 font-mono text-accent"
+				>ADMIN_EMAILS</code
+			>
+			dan tidak perlu didaftarkan di sini.
 		</p>
 	</div>
 

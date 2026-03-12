@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, replaceState } from '$app/navigation';
+	import { page } from '$app/stores';
 	import { useClerkContext } from 'svelte-clerk/client';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -13,6 +14,15 @@
 	let otp = $state('');
 	let isLoading = $state(false);
 	let error = $state('');
+
+	// Show error if redirected from whitelist guard
+	$effect(() => {
+		const urlError = $page.url.searchParams.get('error');
+		if (urlError === 'not_whitelisted') {
+			error = 'Email kamu belum terdaftar di whitelist. Hubungi admin untuk mendapatkan akses.';
+			replaceState('/', {});
+		}
+	});
 
 	const clerkErrorMessages: Record<string, string> = {
 		form_identifier_not_found: 'Email tidak ditemukan. Pastikan email sudah terdaftar.',
