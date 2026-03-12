@@ -1,21 +1,21 @@
 <script lang="ts">
 	import { useClerkContext } from 'svelte-clerk/client';
-	import { useQuery, useMutation } from 'convex-svelte';
+	import { useQuery, useConvexClient } from 'convex-svelte';
+	import { ConvexError } from 'convex/values';
 	import { api } from '../../../convex/_generated/api';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 
 	const ctx = useClerkContext();
+	const client = useConvexClient();
 
 	const userEmail = $derived(
 		ctx.user?.primaryEmailAddress?.emailAddress?.toLowerCase().trim() ?? ''
 	);
 
-	// Queries & mutations
+	// Queries
 	const whitelistQuery = useQuery(api.whitelist.list, {});
-	const addMutation = useMutation(api.whitelist.add);
-	const removeMutation = useMutation(api.whitelist.remove);
 
 	const entries = $derived(whitelistQuery.data ?? []);
 	const isLoading = $derived(whitelistQuery.isLoading);
@@ -28,6 +28,7 @@
 
 	// Confirm delete state
 	let confirmDeleteId = $state<string | null>(null);
+	let deleteError = $state<string | null>(null);
 
 	// Search
 	let search = $state('');
@@ -40,7 +41,10 @@
 		)
 	);
 
-	const isFormValid = $derived(newName.trim().length > 0 && newEmail.trim().includes('@'));
+	const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+	const isFormValid = $derived(
+		newName.trim().length > 0 && EMAIL_REGEX.test(newEmail.trim())
+	);
 
 	function formatDate(timestamp: number): string {
 		return new Date(timestamp).toLocaleDateString('id-ID', {
@@ -50,28 +54,37 @@
 		});
 	}
 
+	function extractError(err: unknown, fallback: string): string {
+		if (err instanceof ConvexError) {
+			return typeof err.data === 'string' ? err.data : fallback;
+		}
+		return err instanceof Error ? err.message : fallback;
+	}
+
 	async function handleAdd() {
 		if (!isFormValid || isAdding) return;
 		isAdding = true;
 		addError = '';
 
 		try {
-			await addMutation({ email: newEmail.trim(), name: newName.trim() });
+			await client.mutation(api.whitelist.add, { email: newEmail.trim(), name: newName.trim() });
 			newName = '';
 			newEmail = '';
 		} catch (err) {
-			addError = err instanceof Error ? err.message : 'Gagal menambahkan email. Coba lagi.';
+			addError = extractError(err, 'Gagal menambahkan email. Coba lagi.');
 		} finally {
 			isAdding = false;
 		}
 	}
 
 	async function handleDelete(id: string) {
+		deleteError = null;
 		try {
-			await removeMutation({ id: id as never });
+			await client.mutation(api.whitelist.remove, { id: id as never });
 			confirmDeleteId = null;
-		} catch {
-			// silently fail — Convex will retry
+		} catch (err) {
+			confirmDeleteId = null;
+			deleteError = extractError(err, 'Gagal menghapus email. Coba lagi.');
 		}
 	}
 
@@ -310,6 +323,40 @@
 		<p class="mt-3 text-xs text-muted">
 			Menampilkan {filteredEntries.length} dari {entries.length} email terdaftar.
 		</p>
+	{/if}
+
+	<!-- Delete error -->
+	{#if deleteError}
+		<div class="mb-4 flex items-start gap-2.5 rounded-xl border border-danger/20 bg-danger/5 px-4 py-3">
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="14"
+				height="14"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				class="mt-0.5 shrink-0 text-danger"
+			>
+				<circle cx="12" cy="12" r="10" />
+				<line x1="12" y1="8" x2="12" y2="12" />
+				<line x1="12" y1="16" x2="12.01" y2="16" />
+			</svg>
+			<p class="flex-1 text-xs leading-relaxed text-danger/90">{deleteError}</p>
+			<button
+				type="button"
+				onclick={() => (deleteError = null)}
+				class="shrink-0 text-danger/60 hover:text-danger"
+				aria-label="Tutup"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<line x1="18" y1="6" x2="6" y2="18" />
+					<line x1="6" y1="6" x2="18" y2="18" />
+				</svg>
+			</button>
+		</div>
 	{/if}
 
 	<!-- Info note -->

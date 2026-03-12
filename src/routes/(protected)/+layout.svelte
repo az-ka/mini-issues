@@ -2,14 +2,13 @@
 	import { useClerkContext } from 'svelte-clerk/client';
 	import { useQuery } from 'convex-svelte';
 	import { api } from '../../convex/_generated/api';
-	import { goto } from '$app/navigation';
 
 	interface Props {
 		children: import('svelte').Snippet;
-		data: { adminEmails: string[] };
+		data: { userId: string };
 	}
 
-	let { children, data }: Props = $props();
+	let { children }: Props = $props();
 
 	const ctx = useClerkContext();
 
@@ -17,25 +16,18 @@
 		ctx.user?.primaryEmailAddress?.emailAddress?.toLowerCase().trim() ?? null
 	);
 
-	const isAdminByEnv = $derived(
-		userEmail !== null && data.adminEmails.includes(userEmail)
-	);
-
-	// Only query whitelist if user is not already an admin via env
-	const whitelistCheck = $derived(
-		!isAdminByEnv && userEmail !== null
-			? useQuery(api.whitelist.isAllowed, { email: userEmail })
+	// Query whitelist+admin status in one call (isCurrentUserAllowed covers both)
+	const accessCheck = $derived(
+		userEmail !== null
+			? useQuery(api.whitelist.isCurrentUserAllowed, {})
 			: null
 	);
 
-	const isAllowed = $derived(
-		isAdminByEnv ||
-		(whitelistCheck?.data === true)
-	);
+	const isAllowed = $derived(accessCheck?.data === true);
 
 	const isChecking = $derived(
 		ctx.user === undefined ||
-		(!isAdminByEnv && whitelistCheck?.isLoading === true)
+		accessCheck?.isLoading === true
 	);
 
 	const isDenied = $derived(
@@ -43,14 +35,16 @@
 		ctx.user !== null &&
 		ctx.user !== undefined &&
 		!isAllowed &&
-		whitelistCheck?.isLoading === false
+		accessCheck?.isLoading === false
 	);
 
 	$effect(() => {
 		if (!isDenied) return;
 		const clerk = ctx.clerk;
 		if (!clerk) return;
-		clerk.signOut().then(() => goto('/?error=not_whitelisted'));
+		clerk.signOut().then(() => {
+			window.location.replace('/?error=not_whitelisted');
+		});
 	});
 </script>
 

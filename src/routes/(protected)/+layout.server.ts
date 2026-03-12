@@ -8,10 +8,5 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 		redirect(307, '/');
 	}
 
-	const adminEmails = (process.env.ADMIN_EMAILS ?? '')
-		.split(',')
-		.map((s) => s.trim().toLowerCase())
-		.filter(Boolean);
-
-	return { userId, adminEmails };
+	return { userId };
 };
