@@ -78,6 +78,13 @@
 	let messagesEnd = $state<HTMLDivElement | null>(null);
 	let textareaEl = $state<HTMLTextAreaElement | null>(null);
 
+	// Auto-focus textarea on mount and after session restore
+	$effect(() => {
+		if (textareaEl && !isChatDone) {
+			textareaEl.focus();
+		}
+	});
+
 	// Scroll to bottom when messages or loading state changes
 	$effect(() => {
 		messages.length;
@@ -197,8 +204,9 @@
 			errorMessage = err instanceof Error ? err.message : 'Gagal menghubungi AI. Coba lagi.';
 		} finally {
 			isLoading = false;
-			// Return focus to input so user can keep typing without clicking
+			// Wait for DOM to re-enable the textarea before focusing
 			if (!isChatDone) {
+				await tick();
 				textareaEl?.focus();
 			}
 		}
