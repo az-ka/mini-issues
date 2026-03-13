@@ -86,5 +86,14 @@ export default defineSchema({
 		content: v.string(),
 		isRead: v.boolean(),
 		createdAt: v.number()
-	}).index('by_user_unread', ['userId', 'isRead'])
+	}).index('by_user_unread', ['userId', 'isRead']),
+
+	// One active chat session per user — persists across refreshes and devices
+	chatSessions: defineTable({
+		clerkId: v.string(),
+		messages: v.string(), // JSON-serialized Message[]
+		isChatDone: v.boolean(),
+		reportId: v.optional(v.string()),
+		updatedAt: v.number()
+	}).index('by_clerk_id', ['clerkId'])
 });

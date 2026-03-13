@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import { useConvexClient } from 'convex-svelte';
+	import { useConvexClient, useQuery } from 'convex-svelte';
 	import { api } from '../../../../convex/_generated/api';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -26,23 +26,46 @@
 		businessImpact: string;
 	}
 
+	const OPENER: Message = {
+		id: 1,
+		role: 'ai',
+		text: 'Halo! 👋 Saya akan membantu kamu menyusun laporan yang lengkap. Ceritakan masalah atau permintaanmu — tidak perlu format khusus, tulis saja dengan kata-katamu sendiri ya.'
+	};
+
 	const client = useConvexClient();
+	const savedSession = useQuery(api.chatSessions.getSession, () => ({}));
 
-	// Hardcoded opener to avoid an extra API call
-	let messages = $state<Message[]>([
-		{
-			id: 1,
-			role: 'ai',
-			text: 'Halo! 👋 Saya akan membantu kamu menyusun laporan yang lengkap. Ceritakan masalah atau permintaanmu — tidak perlu format khusus, tulis saja dengan kata-katamu sendiri ya.'
-		}
-	]);
-
+	let messages = $state<Message[]>([OPENER]);
 	let inputValue = $state('');
 	let isLoading = $state(false);
 	let isChatDone = $state(false);
 	let reportId = $state('');
 	let errorMessage = $state('');
 	let nextId = $state(2);
+	let sessionRestored = $state(false);
+	let showConfirmReset = $state(false);
+
+	// Restore session from Convex once it loads
+	$effect(() => {
+		if (sessionRestored || savedSession.isLoading || savedSession.data === undefined) return;
+		sessionRestored = true;
+
+		const session = savedSession.data;
+		if (!session) return;
+
+		try {
+			const parsed: Message[] = JSON.parse(session.messages);
+			if (parsed.length > 0) {
+				messages = parsed;
+				nextId = Math.max(...parsed.map((m) => m.id)) + 1;
+			}
+		} catch {
+			// Corrupted session data — start fresh
+		}
+
+		isChatDone = session.isChatDone;
+		reportId = session.reportId ?? '';
+	});
 
 	// DOM refs for auto-scroll and auto-resize
 	let messagesEnd = $state<HTMLDivElement | null>(null);
@@ -93,6 +116,26 @@
 		return id;
 	}
 
+	async function persistSession(done: boolean, rid: string) {
+		await client.mutation(api.chatSessions.saveSession, {
+			messages: JSON.stringify(messages),
+			isChatDone: done,
+			reportId: rid || undefined
+		});
+	}
+
+	async function startFresh() {
+		await client.mutation(api.chatSessions.clearSession, {});
+		messages = [OPENER];
+		inputValue = '';
+		isLoading = false;
+		isChatDone = false;
+		reportId = '';
+		errorMessage = '';
+		nextId = 2;
+		showConfirmReset = false;
+	}
+
 	async function sendMessage() {
 		const text = inputValue.trim();
 		if (!text || isLoading || isChatDone) return;
@@ -138,8 +181,10 @@
 				];
 				reportId = id;
 				isChatDone = true;
+				await persistSession(true, id);
 			} else {
 				messages = [...messages, { id: nextId++, role: 'ai', text: aiText }];
+				await persistSession(false, reportId);
 			}
 		} catch (err) {
 			errorMessage = err instanceof Error ? err.message : 'Gagal menghubungi AI. Coba lagi.';
@@ -159,7 +204,48 @@
 <div class="mx-auto flex min-h-dvh max-w-2xl flex-col px-4">
 
 	<div class="sticky top-0 z-10 bg-bg pt-6 pb-3">
-		<PageHeader title="Buat Laporan Baru" backHref="/dashboard" backLabel="Kembali ke Dashboard" />
+		<PageHeader title="Buat Laporan Baru" backHref="/dashboard" backLabel="Kembali ke Dashboard">
+			{#snippet right()}
+				{#if messages.length > 1 || isChatDone}
+					<button
+						type="button"
+						onclick={() => {
+							if (isChatDone) {
+								startFresh();
+							} else {
+								showConfirmReset = true;
+							}
+						}}
+						class="cursor-pointer rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-bg transition-colors hover:bg-accent/85"
+					>
+						+ Mulai Baru
+					</button>
+				{/if}
+			{/snippet}
+		</PageHeader>
+
+		{#if showConfirmReset}
+			<div class="mb-3 rounded-xl border border-danger/20 bg-danger/5 px-4 py-3 text-sm">
+				<p class="mb-2 text-foreground">Hapus sesi ini dan mulai dari awal?</p>
+				<div class="flex gap-2">
+					<button
+						type="button"
+						onclick={startFresh}
+						class="cursor-pointer rounded-lg bg-danger px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-danger/85"
+					>
+						Ya, hapus
+					</button>
+					<button
+						type="button"
+						onclick={() => (showConfirmReset = false)}
+						class="cursor-pointer rounded-lg border border-border px-3 py-1.5 text-xs text-muted transition-colors hover:border-foreground/30 hover:text-foreground"
+					>
+						Batal
+					</button>
+				</div>
+			</div>
+		{/if}
+
 		<div class="h-px bg-border"></div>
 	</div>
 
