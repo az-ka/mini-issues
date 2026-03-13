@@ -181,7 +181,7 @@
 			const { text: aiText } = await res.json();
 
 			const extracted = extractDraft(aiText);
-			if (extracted) {
+		if (extracted) {
 				const draft: TicketDraft = JSON.parse(extracted.json);
 				const id = await saveDraftToConvex(draft);
 
@@ -195,10 +195,14 @@
 				];
 				reportId = id;
 				isChatDone = true;
-				await persistSession(true, id);
+				isLoading = false;
+				persistSession(true, id); // fire and forget — no need to block UI
 			} else {
 				messages = [...messages, { id: nextId++, role: 'ai', text: aiText }];
-				await persistSession(false, reportId);
+				isLoading = false;
+				await tick();
+				textareaEl?.focus();
+				persistSession(false, reportId); // fire and forget
 			}
 		} catch (err) {
 			errorMessage = err instanceof Error ? err.message : 'Gagal menghubungi AI. Coba lagi.';
