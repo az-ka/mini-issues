@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { useQuery } from 'convex-svelte';
 	import { useClerkContext } from 'svelte-clerk/client';
+	import { toast } from 'svelte-sonner';
 	import { api } from '../../../../../convex/_generated/api';
 	import type { Id } from '../../../../../convex/_generated/dataModel';
 	import PageHeader from '$lib/components/PageHeader.svelte';
@@ -41,6 +42,11 @@
 	let attachments = $state<File[]>([]);
 	let isDragging = $state(false);
 	let populated = $state(false);
+	let previewFile = $state<File | null>(null);
+	let previewUrl = $state('');
+
+	const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB (Trello free limit)
+	const MAX_FILES = 5;
 
 	const FREQ_MAP: Record<string, Frequency> = {
 		Selalu: 'selalu',
@@ -90,11 +96,42 @@
 		const input = e.target as HTMLInputElement;
 		if (!input.files) return;
 		addFiles(Array.from(input.files));
+		input.value = '';
 	}
 
 	function addFiles(files: File[]) {
-		const valid = files.filter((f) => f.size <= 10 * 1024 * 1024);
-		attachments = [...attachments, ...valid].slice(0, 5);
+		const oversized = files.filter((f) => f.size > MAX_FILE_SIZE);
+		if (oversized.length > 0) {
+			toast.error(`File terlalu besar (maks 10MB): ${oversized.map((f) => f.name).join(', ')}`);
+		}
+
+		const valid = files.filter((f) => f.size <= MAX_FILE_SIZE);
+		const combined = [...attachments, ...valid];
+
+		if (combined.length > MAX_FILES) {
+			toast.warning(`Maksimal ${MAX_FILES} file. Beberapa file tidak ditambahkan.`);
+		}
+
+		attachments = combined.slice(0, MAX_FILES);
+	}
+
+	function openPreview(file: File) {
+		previewFile = file;
+		previewUrl = URL.createObjectURL(file);
+	}
+
+	function closePreview() {
+		if (previewUrl) URL.revokeObjectURL(previewUrl);
+		previewFile = null;
+		previewUrl = '';
+	}
+
+	function isImage(file: File) {
+		return file.type.startsWith('image/');
+	}
+
+	function isVideo(file: File) {
+		return file.type.startsWith('video/');
 	}
 
 	function removeAttachment(index: number) {
@@ -258,13 +295,46 @@
 				<div class="mt-3 flex flex-col gap-2">
 					{#each attachments as file, i}
 						<div class="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2">
-							<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-muted">
-								<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-								<polyline points="14 2 14 8 20 8" />
-							</svg>
-							<span class="min-w-0 flex-1 truncate text-xs text-foreground">{file.name}</span>
-							<span class="shrink-0 text-xs text-muted">{(file.size / 1024 / 1024).toFixed(1)} MB</span>
-							<button type="button" aria-label="Hapus attachment {file.name}" onclick={() => removeAttachment(i)} class="shrink-0 rounded p-0.5 text-muted transition-colors hover:text-danger">
+							<!-- Thumbnail / icon — click to preview -->
+							<button
+								type="button"
+								onclick={() => openPreview(file)}
+								class="shrink-0 cursor-pointer"
+								aria-label="Preview {file.name}"
+							>
+								{#if isImage(file)}
+									<img
+										src={URL.createObjectURL(file)}
+										alt={file.name}
+										class="h-9 w-9 rounded object-cover ring-1 ring-border"
+									/>
+								{:else if isVideo(file)}
+									<div class="flex h-9 w-9 items-center justify-center rounded bg-surface-2 ring-1 ring-border text-muted">
+										<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<polygon points="5 3 19 12 5 21 5 3" />
+										</svg>
+									</div>
+								{:else}
+									<div class="flex h-9 w-9 items-center justify-center rounded bg-surface-2 ring-1 ring-border text-muted">
+										<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+											<polyline points="14 2 14 8 20 8" />
+										</svg>
+									</div>
+								{/if}
+							</button>
+
+							<button
+								type="button"
+								onclick={() => openPreview(file)}
+								class="min-w-0 flex-1 cursor-pointer text-left"
+								aria-label="Preview {file.name}"
+							>
+								<span class="block truncate text-xs text-foreground hover:text-accent transition-colors">{file.name}</span>
+								<span class="text-xs text-muted">{(file.size / 1024 / 1024).toFixed(1)} MB</span>
+							</button>
+
+							<button type="button" aria-label="Hapus attachment {file.name}" onclick={() => removeAttachment(i)} class="shrink-0 rounded p-0.5 text-muted transition-colors hover:text-danger cursor-pointer">
 								<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 									<line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
 								</svg>
@@ -306,3 +376,43 @@
 	</div>
 	{/if}
 </div>
+
+<!-- File preview modal -->
+{#if previewFile}
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+		role="dialog"
+		aria-modal="true"
+		aria-label="Preview {previewFile.name}"
+	>
+		<!-- Backdrop -->
+		<button type="button" class="absolute inset-0 cursor-default" onclick={closePreview} aria-label="Tutup preview"></button>
+
+		<div class="relative z-10 flex max-h-[90dvh] max-w-3xl w-full flex-col overflow-hidden rounded-2xl bg-surface shadow-2xl">
+			<!-- Header -->
+			<div class="flex items-center justify-between border-b border-border px-4 py-3">
+				<p class="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{previewFile.name}</p>
+				<button
+					type="button"
+					onclick={closePreview}
+					class="ml-3 shrink-0 rounded-lg p-1.5 text-muted transition-colors hover:bg-surface-2 hover:text-foreground cursor-pointer"
+					aria-label="Tutup"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+					</svg>
+				</button>
+			</div>
+
+			<!-- Content -->
+			<div class="flex flex-1 items-center justify-center overflow-auto p-4">
+				{#if isImage(previewFile)}
+					<img src={previewUrl} alt={previewFile.name} class="max-h-[70dvh] max-w-full rounded-lg object-contain" />
+				{:else if isVideo(previewFile)}
+					<!-- svelte-ignore a11y_media_has_caption -->
+					<video src={previewUrl} controls class="max-h-[70dvh] max-w-full rounded-lg"></video>
+				{/if}
+			</div>
+		</div>
+	</div>
+{/if}
