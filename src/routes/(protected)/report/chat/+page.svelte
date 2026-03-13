@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 
@@ -24,6 +25,28 @@
 	let isChatDone = $state(false);
 	let errorMessage = $state('');
 	let nextId = $state(2);
+
+	// Refs untuk auto-scroll dan auto-resize
+	let messagesEnd = $state<HTMLDivElement | null>(null);
+	let textareaEl = $state<HTMLTextAreaElement | null>(null);
+
+	// Auto-scroll ke bawah setiap ada pesan baru atau loading indicator muncul
+	$effect(() => {
+		// Track dependencies
+		messages.length;
+		isLoading;
+		isChatDone;
+		tick().then(() => messagesEnd?.scrollIntoView({ behavior: 'smooth' }));
+	});
+
+	// Auto-resize textarea mengikuti konten, maks 5 baris (~120px)
+	$effect(() => {
+		inputValue;
+		if (textareaEl) {
+			textareaEl.style.height = 'auto';
+			textareaEl.style.height = Math.min(textareaEl.scrollHeight, 120) + 'px';
+		}
+	});
 
 	const DRAFT_START = '===TIKET_DRAFT===';
 	const DRAFT_END = '===SELESAI===';
@@ -187,6 +210,9 @@
 					</a>
 				</div>
 			{/if}
+
+			<!-- Sentinel div untuk auto-scroll -->
+			<div bind:this={messagesEnd}></div>
 		</div>
 	</div>
 
@@ -198,12 +224,13 @@
 		{:else}
 			<div class="flex items-end gap-2">
 				<textarea
+					bind:this={textareaEl}
 					bind:value={inputValue}
 					onkeydown={handleKeydown}
 					placeholder="Ceritakan masalah atau permintaanmu..."
 					rows={1}
 					disabled={isLoading || isChatDone}
-					class="flex-1 resize-none rounded-xl border border-border bg-surface-2 px-4 py-3 text-sm text-foreground placeholder:text-muted/60 transition-colors focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/15 disabled:cursor-not-allowed disabled:opacity-50"
+					class="flex-1 max-h-[120px] resize-none overflow-y-auto rounded-xl border border-border bg-surface-2 px-4 py-3 text-sm text-foreground placeholder:text-muted/60 transition-colors focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/15 disabled:cursor-not-allowed disabled:opacity-50"
 				></textarea>
 				<button
 					type="button"
