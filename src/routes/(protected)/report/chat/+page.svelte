@@ -10,56 +10,92 @@
 		text: string;
 	}
 
-	const mockMessages: Message[] = [
+	// Greeting awal hardcoded agar tidak buang 1 API call
+	let messages = $state<Message[]>([
 		{
 			id: 1,
 			role: 'ai',
-			text: 'Halo! Saya akan membantu kamu membuat laporan yang lengkap. Ceritakan masalah atau permintaanmu — tidak perlu format khusus, tulis saja dengan kata-katamu sendiri. 😊'
-		},
-		{
-			id: 2,
-			role: 'user',
-			text: 'Jadi tadi saya coba login tapi setelah salah masukin password 3 kali, tombol loginnya jadi abu-abu dan tidak bisa diklik sama sekali. Padahal saya sudah ingat passwordnya yang benar.'
-		},
-		{
-			id: 3,
-			role: 'ai',
-			text: 'Oke, paham! Jadi tombolnya jadi tidak aktif setelah 3 kali percobaan yang salah. Kira-kira ini terjadi di browser atau aplikasi apa? Dan apakah sudah coba refresh halaman?'
-		},
-		{
-			id: 4,
-			role: 'user',
-			text: 'Di browser Chrome. Sudah coba refresh dan tombolnya tetap abu-abu. Harus tutup tab dulu baru bisa login lagi.'
-		},
-		{
-			id: 5,
-			role: 'ai',
-			text: 'Noted! Seberapa sering ini terjadi? Apakah setiap kali salah 3 kali pasti begini, atau cuma kadang-kadang?'
-		},
-		{
-			id: 6,
-			role: 'user',
-			text: 'Sepertinya setiap kali. Sudah terjadi 2 hari berturut-turut.'
-		},
-		{
-			id: 7,
-			role: 'ai',
-			text: 'Baik, terima kasih! Satu pertanyaan lagi — apakah ini menghambat pekerjaanmu? Misalnya, kamu jadi tidak bisa akses sistem sama sekali sampai tutup tab?'
-		},
-		{
-			id: 8,
-			role: 'user',
-			text: 'Iya cukup menghambat, apalagi kalau lagi buru-buru harus input data.'
-		},
-		{
-			id: 9,
-			role: 'ai',
-			text: 'Oke, semua informasi sudah cukup! Saya sudah bisa menyusun tiket yang lengkap untuk kamu. Silakan lanjut ke halaman preview untuk cek hasilnya sebelum dikirim ke Trello. 🎉'
+			text: 'Halo! 👋 Saya akan membantu kamu menyusun laporan yang lengkap. Ceritakan masalah atau permintaanmu — tidak perlu format khusus, tulis saja dengan kata-katamu sendiri ya.'
 		}
-	];
+	]);
 
 	let inputValue = $state('');
-	const isChatDone = $derived(mockMessages.at(-1)?.role === 'ai' && mockMessages.length >= 9);
+	let isLoading = $state(false);
+	let isChatDone = $state(false);
+	let errorMessage = $state('');
+	let nextId = $state(2);
+
+	const DRAFT_START = '===TIKET_DRAFT===';
+	const DRAFT_END = '===SELESAI===';
+
+	function extractDraft(text: string): { clean: string; json: string } | null {
+		const start = text.indexOf(DRAFT_START);
+		const end = text.indexOf(DRAFT_END);
+		if (start === -1 || end === -1) return null;
+		const clean = text.slice(0, start).trim();
+		const json = text.slice(start + DRAFT_START.length, end).trim();
+		return { clean, json };
+	}
+
+	async function sendMessage() {
+		const text = inputValue.trim();
+		if (!text || isLoading || isChatDone) return;
+
+		inputValue = '';
+		errorMessage = '';
+
+		messages = [...messages, { id: nextId++, role: 'user', text }];
+		isLoading = true;
+
+		try {
+			// Map role 'ai' → 'model' untuk Gemini API
+			const apiMessages = messages.map((m) => ({
+				role: m.role === 'ai' ? 'model' : 'user',
+				text: m.text
+			}));
+
+			const res = await fetch('/api/chat', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ messages: apiMessages })
+			});
+
+			if (!res.ok) {
+				const err = await res.json().catch(() => ({}));
+				throw new Error(err.message || 'Gagal menghubungi AI.');
+			}
+
+			const { text: aiText } = await res.json();
+
+			const draft = extractDraft(aiText);
+			if (draft) {
+				// Simpan draft sementara di sessionStorage (Step 5 akan simpan ke Convex)
+				sessionStorage.setItem('ticketDraft', draft.json);
+				messages = [
+					...messages,
+					{
+						id: nextId++,
+						role: 'ai',
+						text: draft.clean || 'Oke, ini draft tiketnya! Silakan cek di halaman preview ya.'
+					}
+				];
+				isChatDone = true;
+			} else {
+				messages = [...messages, { id: nextId++, role: 'ai', text: aiText }];
+			}
+		} catch (err) {
+			errorMessage = err instanceof Error ? err.message : 'Gagal menghubungi AI. Coba lagi.';
+		} finally {
+			isLoading = false;
+		}
+	}
+
+	function handleKeydown(e: KeyboardEvent) {
+		if (e.key === 'Enter' && !e.shiftKey) {
+			e.preventDefault();
+			sendMessage();
+		}
+	}
 </script>
 
 <div class="mx-auto flex min-h-dvh max-w-2xl flex-col px-4">
@@ -73,7 +109,7 @@
 	<!-- Messages -->
 	<div class="flex-1 overflow-y-auto py-6">
 		<div class="flex flex-col gap-4">
-			{#each mockMessages as message (message.id)}
+			{#each messages as message (message.id)}
 				{#if message.role === 'ai'}
 					<!-- AI bubble -->
 					<div class="flex items-start gap-3">
@@ -97,8 +133,8 @@
 				{/if}
 			{/each}
 
-			<!-- AI typing indicator (shown when not done) -->
-			{#if !isChatDone}
+			<!-- AI typing indicator (shown when loading) -->
+			{#if isLoading}
 				<div class="flex items-start gap-3">
 					<div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-accent/20 bg-accent/10 text-xs font-semibold text-accent">
 						AI
@@ -108,6 +144,20 @@
 						<span class="h-1.5 w-1.5 animate-bounce rounded-full bg-muted [animation-delay:150ms]"></span>
 						<span class="h-1.5 w-1.5 animate-bounce rounded-full bg-muted [animation-delay:300ms]"></span>
 					</div>
+				</div>
+			{/if}
+
+			<!-- Error message -->
+			{#if errorMessage}
+				<div class="rounded-xl border border-danger/20 bg-danger/5 px-4 py-3 text-sm text-danger">
+					⚠️ {errorMessage}
+					<button
+						type="button"
+						onclick={() => (errorMessage = '')}
+						class="ml-2 underline hover:no-underline"
+					>
+						Tutup
+					</button>
 				</div>
 			{/if}
 
@@ -149,14 +199,17 @@
 			<div class="flex items-end gap-2">
 				<textarea
 					bind:value={inputValue}
+					onkeydown={handleKeydown}
 					placeholder="Ceritakan masalah atau permintaanmu..."
 					rows={1}
-					class="flex-1 resize-none rounded-xl border border-border bg-surface-2 px-4 py-3 text-sm text-foreground placeholder:text-muted/60 transition-colors focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/15"
+					disabled={isLoading || isChatDone}
+					class="flex-1 resize-none rounded-xl border border-border bg-surface-2 px-4 py-3 text-sm text-foreground placeholder:text-muted/60 transition-colors focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/15 disabled:cursor-not-allowed disabled:opacity-50"
 				></textarea>
 				<button
 					type="button"
 					aria-label="Kirim pesan"
-					disabled={!inputValue.trim()}
+					onclick={sendMessage}
+					disabled={!inputValue.trim() || isLoading || isChatDone}
 					class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent text-bg transition-all hover:bg-accent/85 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
 				>
 					<svg
