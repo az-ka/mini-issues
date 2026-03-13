@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { useClerkContext } from 'svelte-clerk/client';
+	import { getInitials } from '$lib/utils';
 	import Button from '$lib/components/ui/Button.svelte';
 	import TicketCard from '$lib/components/TicketCard.svelte';
 
@@ -8,7 +9,7 @@
 
 	const user = $derived(ctx.user);
 	const displayName = $derived(user?.firstName ?? user?.fullName?.split(' ')[0] ?? 'Kamu');
-	const initials = $derived(displayName.charAt(0).toUpperCase());
+	const initials = $derived(getInitials(user?.fullName));
 	const avatarUrl = $derived(user?.imageUrl);
 	const userEmail = $derived(user?.primaryEmailAddress?.emailAddress ?? '');
 

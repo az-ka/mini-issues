@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import { useConvexClient, useQuery } from 'convex-svelte';
+	import { useClerkContext } from 'svelte-clerk/client';
 	import { api } from '../../../../convex/_generated/api';
+	import { getInitials } from '$lib/utils';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 
@@ -26,14 +28,18 @@
 		businessImpact: string;
 	}
 
+	const ctx = useClerkContext();
+	const client = useConvexClient();
+	const savedSession = useQuery(api.chatSessions.getSession, () => ({}));
+
+	const userInitials = $derived(getInitials(ctx.clerk?.user?.fullName));
+	const userAvatar = $derived(ctx.clerk?.user?.imageUrl);
+
 	const OPENER: Message = {
 		id: 1,
 		role: 'ai',
 		text: 'Halo! 👋 Saya akan membantu kamu menyusun laporan yang lengkap. Ceritakan masalah atau permintaanmu — tidak perlu format khusus, tulis saja dengan kata-katamu sendiri ya.'
 	};
-
-	const client = useConvexClient();
-	const savedSession = useQuery(api.chatSessions.getSession, () => ({}));
 
 	let messages = $state<Message[]>([OPENER]);
 	let inputValue = $state('');
@@ -266,9 +272,17 @@
 						<div class="max-w-[85%] rounded-2xl rounded-tr-sm bg-accent/15 border border-accent/20 px-4 py-3 text-sm text-foreground leading-relaxed">
 							{message.text}
 						</div>
+						{#if userAvatar}
+						<img
+							src={userAvatar}
+							alt={userInitials}
+							class="h-8 w-8 shrink-0 rounded-full object-cover ring-1 ring-border"
+						/>
+					{:else}
 						<div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-2 text-xs font-semibold text-muted">
-							R
+							{userInitials}
 						</div>
+					{/if}
 					</div>
 				{/if}
 			{/each}
