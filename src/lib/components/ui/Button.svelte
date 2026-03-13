@@ -9,6 +9,9 @@
 		size?: Size;
 		disabled?: boolean;
 		type?: 'button' | 'submit' | 'reset';
+		href?: string;
+		target?: string;
+		rel?: string;
 		class?: string;
 		onclick?: () => void;
 		children: Snippet;
@@ -19,6 +22,9 @@
 		size = 'md',
 		disabled = false,
 		type = 'button',
+		href,
+		target,
+		rel,
 		class: className = '',
 		onclick,
 		children
@@ -37,13 +43,23 @@
 		md: 'px-4 py-2 text-sm gap-2 rounded-lg',
 		lg: 'px-5 py-2.5 text-sm gap-2 rounded-lg'
 	};
+
+	const baseClass = $derived(
+		`inline-flex cursor-pointer items-center justify-center font-medium transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-40 ${variantClasses[variant]} ${sizeClasses[size]} ${className}`
+	);
 </script>
 
-<button
-	{type}
-	{disabled}
-	{onclick}
-	class="inline-flex cursor-pointer items-center justify-center font-medium transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-40 {variantClasses[variant]} {sizeClasses[size]} {className}"
->
-	{@render children()}
-</button>
+{#if href}
+	<a {href} {target} {rel} class={baseClass}>
+		{@render children()}
+	</a>
+{:else}
+	<button
+		{type}
+		{disabled}
+		{onclick}
+		class={baseClass}
+	>
+		{@render children()}
+	</button>
+{/if}

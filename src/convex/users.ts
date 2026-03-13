@@ -1,4 +1,5 @@
 import { mutation, query } from "./_generated/server";
+import { v } from "convex/values";
 
 /**
  * Sync the current authenticated Clerk user to the Convex database.
@@ -40,8 +41,15 @@ export const syncUser = mutation({
 });
 
 /**
- * Get the current authenticated user's Convex document.
+ * Get a user by their internal Convex document ID.
  */
+export const getById = query({
+  args: { id: v.id("users") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.id);
+  },
+});
+
 export const currentUser = query({
   args: {},
   handler: async (ctx) => {

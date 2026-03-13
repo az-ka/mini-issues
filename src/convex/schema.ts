@@ -61,7 +61,11 @@ export default defineSchema({
 		// Trello integration
 		trelloCardId: v.optional(v.string()),
 		trelloCardUrl: v.optional(v.string()),
-		attachmentUrls: v.optional(v.string()) // JSON array of { name, url }
+		attachmentUrls: v.optional(v.string()), // JSON array of { name, url }
+		trelloStatus: v.optional(v.string()), // Name of the Trello list the card is in
+		trelloCardFound: v.optional(v.boolean()), // false if card was deleted/not found on last fetch
+		trelloLastFetched: v.optional(v.number()), // Epoch ms of last Trello status fetch
+		ticketNumber: v.optional(v.number()) // Sequential MI-XXX number
 	})
 		.index('by_reporter', ['reporterId'])
 		.index('by_department', ['departmentId'])

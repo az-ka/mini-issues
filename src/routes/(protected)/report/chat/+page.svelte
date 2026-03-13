@@ -213,8 +213,8 @@
 		<PageHeader title="Buat Laporan Baru" backHref="/dashboard" backLabel="Kembali ke Dashboard">
 			{#snippet right()}
 				{#if messages.length > 1 || isChatDone}
-					<button
-						type="button"
+					<Button
+						size="sm"
 						onclick={() => {
 							if (isChatDone) {
 								startFresh();
@@ -222,10 +222,9 @@
 								showConfirmReset = true;
 							}
 						}}
-						class="cursor-pointer rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-bg transition-colors hover:bg-accent/85"
 					>
 						+ Mulai Baru
-					</button>
+					</Button>
 				{/if}
 			{/snippet}
 		</PageHeader>
@@ -234,20 +233,8 @@
 			<div class="mb-3 rounded-xl border border-danger/20 bg-danger/5 px-4 py-3 text-sm">
 				<p class="mb-2 text-foreground">Hapus sesi ini dan mulai dari awal?</p>
 				<div class="flex gap-2">
-					<button
-						type="button"
-						onclick={startFresh}
-						class="cursor-pointer rounded-lg bg-danger px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-danger/85"
-					>
-						Ya, hapus
-					</button>
-					<button
-						type="button"
-						onclick={() => (showConfirmReset = false)}
-						class="cursor-pointer rounded-lg border border-border px-3 py-1.5 text-xs text-muted transition-colors hover:border-foreground/30 hover:text-foreground"
-					>
-						Batal
-					</button>
+					<Button size="sm" variant="danger" onclick={startFresh}>Ya, hapus</Button>
+					<Button size="sm" variant="secondary" onclick={() => (showConfirmReset = false)}>Batal</Button>
 				</div>
 			</div>
 		{/if}
@@ -320,14 +307,12 @@
 					<p class="mb-1 text-sm font-medium text-foreground">Informasi sudah lengkap!</p>
 					<p class="mb-4 text-xs text-muted">Cek dan edit draft tiket sebelum dikirim ke Trello.</p>
 					{#if reportId}
-						<a href="/report/preview/{reportId}">
-							<Button size="lg" class="w-full">
-								Lihat Preview Tiket
-								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-									<path d="M5 12h14" /><path d="M12 5l7 7-7 7" />
-								</svg>
-							</Button>
-						</a>
+						<Button href="/report/preview/{reportId}" size="lg" class="w-full">
+							Lihat Preview Tiket
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M5 12h14" /><path d="M12 5l7 7-7 7" />
+							</svg>
+						</Button>
 					{:else}
 						<div class="flex items-center justify-center gap-2 text-xs text-muted">
 							<div class="h-4 w-4 animate-spin rounded-full border-2 border-accent border-t-transparent"></div>
