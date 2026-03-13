@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import { goto } from '$app/navigation';
 	import { useConvexClient } from 'convex-svelte';
 	import { api } from '../../../../convex/_generated/api';
 	import PageHeader from '$lib/components/PageHeader.svelte';
@@ -139,10 +138,6 @@
 				];
 				reportId = id;
 				isChatDone = true;
-
-				// Auto-navigate after a short delay so user can read the final message
-				await tick();
-				setTimeout(() => goto(`/report/preview/${id}`), 1500);
 			} else {
 				messages = [...messages, { id: nextId++, role: 'ai', text: aiText }];
 			}
