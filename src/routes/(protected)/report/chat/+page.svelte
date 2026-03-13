@@ -197,6 +197,10 @@
 			errorMessage = err instanceof Error ? err.message : 'Gagal menghubungi AI. Coba lagi.';
 		} finally {
 			isLoading = false;
+			// Return focus to input so user can keep typing without clicking
+			if (!isChatDone) {
+				textareaEl?.focus();
+			}
 		}
 	}
 
