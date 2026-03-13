@@ -40,7 +40,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 	try {
 		const chat = ai.chats.create({
-			model: 'gemini-2.0-flash',
+			model: 'gemini-2.5-flash',
 			config: {
 				systemInstruction,
 				temperature: 0.7,
