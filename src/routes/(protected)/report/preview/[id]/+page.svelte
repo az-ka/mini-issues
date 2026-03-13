@@ -1,4 +1,8 @@
 <script lang="ts">
+	import { page } from '$app/state';
+	import { useQuery } from 'convex-svelte';
+	import { api } from '../../../../../convex/_generated/api';
+	import type { Id } from '../../../../../convex/_generated/dataModel';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
@@ -9,24 +13,47 @@
 	type Priority = 'high' | 'medium' | 'low';
 	type Frequency = 'selalu' | 'kadang' | 'sekali';
 
-	// Mock draft data filled by AI
-	let title = $state('Tombol login tidak merespon setelah salah password 3 kali');
+	const reportId = $derived(page.params.id as Id<'reports'>);
+	const reportQuery = useQuery(api.reports.getDraft, () => ({ id: reportId }));
+
+	let title = $state('');
 	let type = $state<TicketType>('bug');
-	let priority = $state<Priority>('high');
-	let description = $state(
-		'Setelah pengguna memasukkan password yang salah sebanyak 3 kali berturut-turut, tombol "Masuk" berubah menjadi abu-abu dan tidak bisa diklik. Kondisi ini bertahan bahkan setelah halaman di-refresh, dan hanya hilang jika pengguna menutup tab dan membuka halaman baru.'
-	);
-	let steps = $state(
-		'1. Buka halaman login\n2. Masukkan email yang valid\n3. Masukkan password yang salah sebanyak 3 kali\n4. Perhatikan tombol "Masuk" berubah menjadi tidak aktif\n5. Coba refresh halaman — tombol tetap tidak aktif'
-	);
-	let expected = $state('Tombol login tetap aktif dan pengguna dapat mencoba login kembali, atau muncul pesan error yang jelas dengan opsi reset password.');
-	let actual = $state('Tombol login menjadi abu-abu dan tidak dapat diklik. Harus menutup tab untuk bisa login kembali.');
-	let module = $state('Halaman Login / Autentikasi');
+	let priority = $state<Priority>('medium');
+	let description = $state('');
+	let steps = $state('');
+	let expected = $state('');
+	let actual = $state('');
+	let module = $state('');
 	let frequency = $state<Frequency>('selalu');
-	let impact = $state('Cukup menghambat — pengguna tidak bisa akses sistem sama sekali sampai menutup dan membuka tab baru, terutama bermasalah saat deadline input data.');
+	let impact = $state('');
 
 	let attachments = $state<File[]>([]);
 	let isDragging = $state(false);
+	let populated = $state(false);
+
+	const FREQ_MAP: Record<string, Frequency> = {
+		Selalu: 'selalu',
+		'Kadang-kadang': 'kadang',
+		Sekali: 'sekali'
+	};
+
+	// Populate form fields once the report loads
+	$effect(() => {
+		const data = reportQuery.data;
+		if (!data || populated) return;
+		populated = true;
+
+		title = data.title ?? '';
+		type = (data.type as TicketType) ?? 'bug';
+		priority = (data.priority as Priority) ?? 'medium';
+		module = data.module ?? '';
+		description = data.description ?? '';
+		steps = data.stepsToReproduce ?? '';
+		expected = data.expectedResult ?? '';
+		actual = data.actualResult ?? '';
+		frequency = FREQ_MAP[data.frequency ?? ''] ?? 'selalu';
+		impact = data.businessImpact ?? '';
+	});
 
 	const isBug = $derived(type === 'bug');
 
@@ -73,6 +100,17 @@
 <div class="mx-auto max-w-2xl px-4 py-8">
 	<PageHeader title="Preview & Edit Tiket" backHref="/report/chat" backLabel="Kembali ke Chat" />
 
+	{#if reportQuery.isLoading}
+		<div class="flex flex-col gap-3 pt-4">
+			{#each [1, 2, 3, 4] as _}
+				<div class="h-10 animate-pulse rounded-xl bg-surface-2"></div>
+			{/each}
+		</div>
+	{:else if !reportQuery.data}
+		<div class="rounded-xl border border-danger/20 bg-danger/5 px-4 py-6 text-center text-sm text-danger">
+			Draft tiket tidak ditemukan atau kamu tidak punya akses ke tiket ini.
+		</div>
+	{:else}
 	<p class="mb-6 text-sm text-muted">
 		Periksa dan edit tiket di bawah sebelum dikirim ke Trello. Semua field bisa diubah.
 	</p>
@@ -255,4 +293,5 @@
 		</div>
 
 	</div>
+	{/if}
 </div>

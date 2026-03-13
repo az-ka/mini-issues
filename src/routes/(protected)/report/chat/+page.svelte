@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { tick } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { useConvexClient } from 'convex-svelte';
+	import { api } from '../../../../convex/_generated/api';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 
@@ -10,6 +13,21 @@
 		role: Role;
 		text: string;
 	}
+
+	interface TicketDraft {
+		title: string;
+		type: string;
+		priority: string;
+		module: string;
+		description: string;
+		stepsToReproduce?: string[] | null;
+		expectedBehavior?: string | null;
+		actualBehavior?: string | null;
+		frequency?: string | null;
+		businessImpact: string;
+	}
+
+	const client = useConvexClient();
 
 	// Hardcoded opener to avoid an extra API call
 	let messages = $state<Message[]>([
@@ -23,6 +41,7 @@
 	let inputValue = $state('');
 	let isLoading = $state(false);
 	let isChatDone = $state(false);
+	let reportId = $state('');
 	let errorMessage = $state('');
 	let nextId = $state(2);
 
@@ -59,6 +78,22 @@
 		return { clean, json };
 	}
 
+	async function saveDraftToConvex(draft: TicketDraft): Promise<string> {
+		const id = await client.mutation(api.reports.saveDraft, {
+			title: draft.title,
+			type: draft.type,
+			priority: draft.priority,
+			module: draft.module,
+			description: draft.description,
+			stepsToReproduce: draft.stepsToReproduce ?? undefined,
+			expectedBehavior: draft.expectedBehavior ?? undefined,
+			actualBehavior: draft.actualBehavior ?? undefined,
+			frequency: draft.frequency ?? undefined,
+			businessImpact: draft.businessImpact
+		});
+		return id;
+	}
+
 	async function sendMessage() {
 		const text = inputValue.trim();
 		if (!text || isLoading || isChatDone) return;
@@ -89,19 +124,25 @@
 
 			const { text: aiText } = await res.json();
 
-			const draft = extractDraft(aiText);
-			if (draft) {
-				// TODO: replace with Convex persistence (step 5)
-				sessionStorage.setItem('ticketDraft', draft.json);
+			const extracted = extractDraft(aiText);
+			if (extracted) {
+				const draft: TicketDraft = JSON.parse(extracted.json);
+				const id = await saveDraftToConvex(draft);
+
 				messages = [
 					...messages,
 					{
 						id: nextId++,
 						role: 'ai',
-						text: draft.clean || 'Oke, ini draft tiketnya! Silakan cek di halaman preview ya.'
+						text: extracted.clean || 'Oke, ini draft tiketnya! Silakan cek di halaman preview ya.'
 					}
 				];
+				reportId = id;
 				isChatDone = true;
+
+				// Auto-navigate after a short delay so user can read the final message
+				await tick();
+				setTimeout(() => goto(`/report/preview/${id}`), 1500);
 			} else {
 				messages = [...messages, { id: nextId++, role: 'ai', text: aiText }];
 			}
@@ -183,25 +224,21 @@
 				<div class="mx-auto mt-2 w-full max-w-sm rounded-2xl border border-accent/20 bg-accent/5 p-5 text-center">
 					<p class="mb-1 text-sm font-medium text-foreground">Informasi sudah lengkap!</p>
 					<p class="mb-4 text-xs text-muted">Cek dan edit draft tiket sebelum dikirim ke Trello.</p>
-					<a href="/report/preview/draft">
-						<Button size="lg" class="w-full">
-							Lihat Preview Tiket
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							>
-								<path d="M5 12h14" />
-								<path d="M12 5l7 7-7 7" />
-							</svg>
-						</Button>
-					</a>
+					{#if reportId}
+						<a href="/report/preview/{reportId}">
+							<Button size="lg" class="w-full">
+								Lihat Preview Tiket
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<path d="M5 12h14" /><path d="M12 5l7 7-7 7" />
+								</svg>
+							</Button>
+						</a>
+					{:else}
+						<div class="flex items-center justify-center gap-2 text-xs text-muted">
+							<div class="h-4 w-4 animate-spin rounded-full border-2 border-accent border-t-transparent"></div>
+							Menyimpan draft...
+						</div>
+					{/if}
 				</div>
 			{/if}
 

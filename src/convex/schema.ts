@@ -27,24 +27,29 @@ export default defineSchema({
 
 	reports: defineTable({
 		title: v.string(),
-		type: v.union(v.literal('bug'), v.literal('feature')),
-		departmentId: v.id('departments'),
+		type: v.union(v.literal('bug'), v.literal('feature'), v.literal('improvement')),
+		departmentId: v.optional(v.id('departments')),
 		reporterId: v.id('users'),
 		assigneeId: v.optional(v.id('users')),
-		status: v.string(), // Draft, Pending, In Progress, etc.
+		status: v.string(),
 		voteCount: v.number(),
 		duplicateOfId: v.optional(v.id('reports')),
 		timelineEstimate: v.optional(v.string()),
 
-		// Conditional fields for Bug
-		priority: v.optional(v.string()), // low, medium, high, blocker
+		// Common fields
+		module: v.optional(v.string()),
+		description: v.optional(v.string()),
+		businessImpact: v.optional(v.string()),
+
+		// Bug-specific fields
+		priority: v.optional(v.string()),
 		environment: v.optional(v.string()),
 		stepsToReproduce: v.optional(v.string()),
 		frequency: v.optional(v.string()),
 		expectedResult: v.optional(v.string()),
 		actualResult: v.optional(v.string()),
 
-		// Conditional fields for Feature
+		// Feature-specific fields
 		businessUrgency: v.optional(v.string()),
 		userStory: v.optional(v.string()),
 		currentProblem: v.optional(v.string()),
