@@ -6,6 +6,17 @@ import type { RequestHandler } from './$types';
 
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
+// Fallback chain: best quality first, high-RPM models as safety net
+const MODEL_CHAIN = [
+	'gemini-2.5-flash',
+	'gemini-2.5-flash-lite',
+	'gemini-2.0-flash',
+	'gemma-3-27b-it',
+	'gemma-3-12b-it',
+	'gemma-3-4b-it',
+	'gemma-3-1b-it'
+];
+
 export interface ChatMessage {
 	role: 'user' | 'model';
 	text: string;
@@ -30,30 +41,43 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		error(400, 'messages must be a non-empty array');
 	}
 
-	// All messages except the last one become history for the chat session
+	// All messages except the last become history for the chat session
 	const history = messages.slice(0, -1).map((m) => ({
 		role: m.role,
 		parts: [{ text: m.text }]
 	}));
 
 	const lastMessage = messages.at(-1)!;
+	let lastError: unknown;
 
-	try {
-		const chat = ai.chats.create({
-			model: 'gemini-2.5-flash',
-			config: {
-				systemInstruction: SYSTEM_PROMPT,
-				temperature: 0.7,
-				maxOutputTokens: 1024
-			},
-			history
-		});
+	for (const model of MODEL_CHAIN) {
+		try {
+			const chat = ai.chats.create({
+				model,
+				config: {
+					systemInstruction: SYSTEM_PROMPT,
+					temperature: 0.7,
+					maxOutputTokens: 1024
+				},
+				history
+			});
 
-		const response = await chat.sendMessage({ message: lastMessage.text });
-
-		return json({ text: response.text });
-	} catch (err) {
-		console.error('[/api/chat] Gemini error:', err);
-		error(500, 'Gagal menghubungi AI. Coba lagi.');
+			const response = await chat.sendMessage({ message: lastMessage.text });
+			return json({ text: response.text });
+		} catch (err) {
+			const status = (err as { status?: number })?.status;
+			// Only fall through to the next model on rate limit (429) or quota errors
+			if (status === 429 || status === 503) {
+				console.warn(`[/api/chat] Model ${model} rate-limited, trying next...`);
+				lastError = err;
+				continue;
+			}
+			// Other errors (auth, invalid request, etc.) — fail immediately
+			console.error(`[/api/chat] Model ${model} error:`, err);
+			error(500, 'Gagal menghubungi AI. Coba lagi.');
+		}
 	}
+
+	console.error('[/api/chat] All models exhausted:', lastError);
+	error(500, 'Gagal menghubungi AI. Coba lagi.');
 };
