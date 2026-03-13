@@ -381,7 +381,7 @@
 			</svg>
 			<p class="text-xs leading-relaxed text-muted">
 				Tiket ini sudah dikirim dan tidak dapat diedit. Jika ada perubahan, silakan hubungi developer
-				langsung melalui Trello.
+				langsung melalui Whatsapp.
 			</p>
 		</div>
 	</div>
