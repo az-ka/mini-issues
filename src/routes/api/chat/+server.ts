@@ -12,7 +12,6 @@ export interface ChatMessage {
 }
 
 export const POST: RequestHandler = async ({ request, locals }) => {
-	// Must be authenticated
 	const { userId } = locals.auth();
 	if (!userId) {
 		error(401, 'Unauthorized');
@@ -31,7 +30,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		error(400, 'messages must be a non-empty array');
 	}
 
-	// Convert to Gemini history format (all messages except the last one)
+	// All messages except the last one become history for the chat session
 	const history = messages.slice(0, -1).map((m) => ({
 		role: m.role,
 		parts: [{ text: m.text }]

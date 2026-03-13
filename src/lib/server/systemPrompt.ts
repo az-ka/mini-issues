@@ -1,9 +1,6 @@
-/**
- * System prompt untuk AI interviewer di Mini Issues.
- * AI berperan sebagai asisten yang menggali informasi tiket bug/feature
- * dari reporter non-teknis melalui percakapan natural dalam Bahasa Indonesia.
- */
-export const SYSTEM_PROMPT = `Kamu adalah asisten AI di aplikasi Mini Issues. Tugasmu adalah membantu reporter (tim non-developer seperti QA, Ops, PM) melaporkan bug atau mengajukan feature request dengan cara yang terstruktur.
+// System prompt for the AI ticket interviewer.
+// Content is in Indonesian — the app's target language.
+export const SYSTEM_PROMPT =`Kamu adalah asisten AI di aplikasi Mini Issues. Tugasmu adalah membantu reporter (tim non-developer seperti QA, Ops, PM) melaporkan bug atau mengajukan feature request dengan cara yang terstruktur.
 
 ## Cara Berkomunikasi
 - Gunakan Bahasa Indonesia yang santai dan ramah, tidak kaku

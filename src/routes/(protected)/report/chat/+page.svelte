@@ -11,7 +11,7 @@
 		text: string;
 	}
 
-	// Greeting awal hardcoded agar tidak buang 1 API call
+	// Hardcoded opener to avoid an extra API call
 	let messages = $state<Message[]>([
 		{
 			id: 1,
@@ -26,20 +26,19 @@
 	let errorMessage = $state('');
 	let nextId = $state(2);
 
-	// Refs untuk auto-scroll dan auto-resize
+	// DOM refs for auto-scroll and auto-resize
 	let messagesEnd = $state<HTMLDivElement | null>(null);
 	let textareaEl = $state<HTMLTextAreaElement | null>(null);
 
-	// Auto-scroll ke bawah setiap ada pesan baru atau loading indicator muncul
+	// Scroll to bottom when messages or loading state changes
 	$effect(() => {
-		// Track dependencies
 		messages.length;
 		isLoading;
 		isChatDone;
 		tick().then(() => messagesEnd?.scrollIntoView({ behavior: 'smooth' }));
 	});
 
-	// Auto-resize textarea mengikuti konten, maks 5 baris (~120px)
+	// Auto-resize textarea up to ~5 lines (120px)
 	$effect(() => {
 		inputValue;
 		if (textareaEl) {
@@ -71,7 +70,7 @@
 		isLoading = true;
 
 		try {
-			// Map role 'ai' → 'model' untuk Gemini API
+			// Map 'ai' → 'model' for Gemini API format
 			const apiMessages = messages.map((m) => ({
 				role: m.role === 'ai' ? 'model' : 'user',
 				text: m.text
@@ -92,7 +91,7 @@
 
 			const draft = extractDraft(aiText);
 			if (draft) {
-				// Simpan draft sementara di sessionStorage (Step 5 akan simpan ke Convex)
+				// TODO: replace with Convex persistence (step 5)
 				sessionStorage.setItem('ticketDraft', draft.json);
 				messages = [
 					...messages,
@@ -123,18 +122,15 @@
 
 <div class="mx-auto flex min-h-dvh max-w-2xl flex-col px-4">
 
-	<!-- Header -->
 	<div class="sticky top-0 z-10 bg-bg pt-6 pb-3">
 		<PageHeader title="Buat Laporan Baru" backHref="/dashboard" backLabel="Kembali ke Dashboard" />
 		<div class="h-px bg-border"></div>
 	</div>
 
-	<!-- Messages -->
 	<div class="flex-1 overflow-y-auto py-6">
 		<div class="flex flex-col gap-4">
 			{#each messages as message (message.id)}
 				{#if message.role === 'ai'}
-					<!-- AI bubble -->
 					<div class="flex items-start gap-3">
 						<div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-accent/20 bg-accent/10 text-xs font-semibold text-accent">
 							AI
@@ -144,7 +140,6 @@
 						</div>
 					</div>
 				{:else}
-					<!-- User bubble -->
 					<div class="flex items-start justify-end gap-3">
 						<div class="max-w-[85%] rounded-2xl rounded-tr-sm bg-accent/15 border border-accent/20 px-4 py-3 text-sm text-foreground leading-relaxed">
 							{message.text}
@@ -156,7 +151,7 @@
 				{/if}
 			{/each}
 
-			<!-- AI typing indicator (shown when loading) -->
+			<!-- Typing indicator -->
 			{#if isLoading}
 				<div class="flex items-start gap-3">
 					<div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-accent/20 bg-accent/10 text-xs font-semibold text-accent">
@@ -170,7 +165,6 @@
 				</div>
 			{/if}
 
-			<!-- Error message -->
 			{#if errorMessage}
 				<div class="rounded-xl border border-danger/20 bg-danger/5 px-4 py-3 text-sm text-danger">
 					⚠️ {errorMessage}
@@ -184,7 +178,7 @@
 				</div>
 			{/if}
 
-			<!-- Lanjut ke Preview CTA -->
+			<!-- Preview CTA — shown when AI finishes gathering info -->
 			{#if isChatDone}
 				<div class="mx-auto mt-2 w-full max-w-sm rounded-2xl border border-accent/20 bg-accent/5 p-5 text-center">
 					<p class="mb-1 text-sm font-medium text-foreground">Informasi sudah lengkap!</p>
@@ -211,12 +205,10 @@
 				</div>
 			{/if}
 
-			<!-- Sentinel div untuk auto-scroll -->
 			<div bind:this={messagesEnd}></div>
 		</div>
 	</div>
 
-	<!-- Input area -->
 	<div class="sticky bottom-0 bg-bg py-4">
 		<div class="h-px bg-border mb-4"></div>
 		{#if isChatDone}
