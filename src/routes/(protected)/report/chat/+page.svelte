@@ -6,6 +6,7 @@
 	import { getInitials } from '$lib/utils';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Dialog from '$lib/components/ui/Dialog.svelte';
 
 	type Role = 'ai' | 'user';
 
@@ -229,16 +230,6 @@
 			{/snippet}
 		</PageHeader>
 
-		{#if showConfirmReset}
-			<div class="mb-3 rounded-xl border border-danger/20 bg-danger/5 px-4 py-3 text-sm">
-				<p class="mb-2 text-foreground">Hapus sesi ini dan mulai dari awal?</p>
-				<div class="flex gap-2">
-					<Button size="sm" variant="danger" onclick={startFresh}>Ya, hapus</Button>
-					<Button size="sm" variant="secondary" onclick={() => (showConfirmReset = false)}>Batal</Button>
-				</div>
-			</div>
-		{/if}
-
 		<div class="h-px bg-border"></div>
 	</div>
 
@@ -371,3 +362,18 @@
 	</div>
 
 </div>
+
+<!-- Confirm reset dialog -->
+<Dialog
+	open={showConfirmReset}
+	title="Mulai sesi baru?"
+	onclose={() => (showConfirmReset = false)}
+>
+	{#snippet children()}
+		Semua pesan di sesi ini akan dihapus dan kamu akan mulai dari awal. Tindakan ini tidak bisa dibatalkan.
+	{/snippet}
+	{#snippet footer()}
+		<Button size="sm" variant="secondary" onclick={() => (showConfirmReset = false)}>Batal</Button>
+		<Button size="sm" variant="danger" onclick={startFresh}>Ya, hapus sesi</Button>
+	{/snippet}
+</Dialog>
