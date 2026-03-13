@@ -3,13 +3,36 @@
 
 	const ctx = useClerkContext();
 
-	let handled = false;
-
 	$effect(() => {
-		const clerk = ctx.clerk;
-		if (!clerk || handled) return;
-		handled = true;
-		clerk.handleRedirectCallback({});
+		const executeRedirect = () => {
+			ctx.clerk?.handleRedirectCallback({
+				signInForceRedirectUrl: '/dashboard',
+				signUpForceRedirectUrl: '/dashboard'
+			}).catch((err) => {
+				console.error('[sso-callback] Error in handleRedirectCallback:', err);
+			});
+		};
+
+		if (ctx.clerk?.loaded) {
+			executeRedirect();
+			return;
+		}
+
+		let intervalId: number;
+
+		// Poll for clerk.loaded since it may not trigger Svelte's reactivity automatically
+		if (ctx.clerk && !ctx.clerk.loaded) {
+			intervalId = window.setInterval(() => {
+				if (ctx.clerk?.loaded) {
+					window.clearInterval(intervalId);
+					executeRedirect();
+				}
+			}, 100);
+		}
+
+		return () => {
+			if (intervalId) window.clearInterval(intervalId);
+		};
 	});
 </script>
 
@@ -34,7 +57,7 @@
 			</svg>
 		</div>
 		<div class="text-center">
-			<p class="text-sm font-medium text-foreground">Memverifikasi akun...</p>
+			<p class="text-sm font-medium text-foreground">Menyelesaikan verifikasi...</p>
 			<p class="mt-1 text-xs text-muted">Mohon tunggu sebentar.</p>
 		</div>
 	</div>
