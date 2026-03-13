@@ -44,6 +44,14 @@
 	let populated = $state(false);
 	let previewFile = $state<File | null>(null);
 	let previewUrl = $state('');
+	let isSending = $state(false);
+
+	// Derived from Convex — already sent if trelloCardId exists
+	const alreadySent = $derived(!!reportQuery.data?.trelloCardId);
+	const trelloCardUrl = $derived(reportQuery.data?.trelloCardUrl ?? '');
+	const savedAttachments = $derived<{ name: string; url: string }[]>(
+		reportQuery.data?.attachmentUrls ? JSON.parse(reportQuery.data.attachmentUrls) : []
+	);
 
 	const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB (Trello free limit)
 	const MAX_FILES = 5;
@@ -142,6 +150,44 @@
 		e.preventDefault();
 		isDragging = false;
 		if (e.dataTransfer?.files) addFiles(Array.from(e.dataTransfer.files));
+	}
+
+	async function sendToTrello() {
+		if (isSending || alreadySent) return;
+		isSending = true;
+
+		try {
+			const form = new FormData();
+			form.append('reportId', reportId);
+			form.append('title', title);
+			form.append('type', type);
+			form.append('priority', priority);
+			form.append('module', module);
+			form.append('description', description);
+			form.append('stepsToReproduce', steps);
+			form.append('expectedResult', expected);
+			form.append('actualResult', actual);
+			form.append('frequency', frequency);
+			form.append('businessImpact', impact);
+			form.append('reporterName', reporterName);
+
+			for (const file of attachments) {
+				form.append('attachments', file, file.name);
+			}
+
+			const res = await fetch('/api/trello', { method: 'POST', body: form });
+
+			if (!res.ok) {
+				const err = await res.json().catch(() => ({}));
+				throw new Error(err.message || 'Gagal mengirim ke Trello.');
+			}
+
+			toast.success('Tiket berhasil dikirim ke Trello!');
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : 'Gagal mengirim ke Trello. Coba lagi.');
+		} finally {
+			isSending = false;
+		}
 	}
 </script>
 
@@ -359,15 +405,62 @@
 			</div>
 		</div>
 
+		<!-- Saved attachments (after sent to Trello) -->
+		{#if alreadySent && savedAttachments.length > 0}
+			<div>
+				<p class="mb-1.5 text-sm font-medium text-foreground">
+					Attachment
+					<span class="ml-1 text-xs font-normal text-muted">(tersimpan di Trello)</span>
+				</p>
+				<div class="flex flex-col gap-2">
+					{#each savedAttachments as att}
+						<a
+							href={att.url}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2 transition-colors hover:border-accent/40"
+						>
+							<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-muted">
+								<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+								<polyline points="14 2 14 8 20 8" />
+							</svg>
+							<span class="min-w-0 flex-1 truncate text-xs text-foreground">{att.name}</span>
+							<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-muted">
+								<path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+							</svg>
+						</a>
+					{/each}
+				</div>
+			</div>
+		{/if}
+
 		<!-- Actions -->
 		<div class="flex flex-col gap-3 pt-2 pb-8">
-			<Button size="lg" class="w-full">
-				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-					<path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
-					<polyline points="22 4 12 14.01 9 11.01" />
-				</svg>
-				Kirim ke Trello
-			</Button>
+			{#if alreadySent}
+				<a
+					href={trelloCardUrl}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="flex w-full items-center justify-center gap-2 rounded-xl border border-success/30 bg-success/10 px-4 py-3 text-sm font-medium text-success transition-colors hover:bg-success/15"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+					</svg>
+					Sudah dikirim — Lihat di Trello →
+				</a>
+			{:else}
+				<Button size="lg" class="w-full" onclick={sendToTrello} disabled={isSending}>
+					{#if isSending}
+						<div class="h-4 w-4 animate-spin rounded-full border-2 border-bg border-t-transparent"></div>
+						Mengirim...
+					{:else}
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+						</svg>
+						Kirim ke Trello
+					{/if}
+				</Button>
+			{/if}
 			<a href="/report/chat" class="text-center text-sm text-muted transition-colors hover:text-foreground">
 				← Kembali ke Chat
 			</a>

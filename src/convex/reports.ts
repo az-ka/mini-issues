@@ -78,3 +78,34 @@ export const getDraft = query({
 		return report;
 	}
 });
+
+export const markSentToTrello = mutation({
+	args: {
+		id: v.id('reports'),
+		trelloCardId: v.string(),
+		trelloCardUrl: v.string(),
+		attachmentUrls: v.optional(v.string())
+	},
+	handler: async (ctx, args) => {
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) throw new ConvexError('Not authenticated');
+
+		const report = await ctx.db.get(args.id);
+		if (!report) throw new ConvexError('Report not found');
+
+		const user = await ctx.db
+			.query('users')
+			.withIndex('by_clerk_id', (q) => q.eq('clerkId', identity.subject))
+			.first();
+
+		if (!user || report.reporterId !== user._id) throw new ConvexError('Unauthorized');
+
+		await ctx.db.patch(args.id, {
+			status: 'open',
+			trelloCardId: args.trelloCardId,
+			trelloCardUrl: args.trelloCardUrl,
+			attachmentUrls: args.attachmentUrls,
+			updatedAt: Date.now()
+		});
+	}
+});

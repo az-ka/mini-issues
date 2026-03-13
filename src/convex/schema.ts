@@ -56,7 +56,12 @@ export default defineSchema({
 		acceptanceCriteria: v.optional(v.string()),
 
 		createdAt: v.number(),
-		updatedAt: v.number()
+		updatedAt: v.number(),
+
+		// Trello integration
+		trelloCardId: v.optional(v.string()),
+		trelloCardUrl: v.optional(v.string()),
+		attachmentUrls: v.optional(v.string()) // JSON array of { name, url }
 	})
 		.index('by_reporter', ['reporterId'])
 		.index('by_department', ['departmentId'])
