@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { useQuery } from 'convex-svelte';
+	import { useClerkContext } from 'svelte-clerk/client';
 	import { api } from '../../../../../convex/_generated/api';
 	import type { Id } from '../../../../../convex/_generated/dataModel';
 	import PageHeader from '$lib/components/PageHeader.svelte';
@@ -15,6 +16,16 @@
 
 	const reportId = $derived(page.params.id as Id<'reports'>);
 	const reportQuery = useQuery(api.reports.getDraft, () => ({ id: reportId }));
+
+	const ctx = useClerkContext();
+	const reporterName = $derived(ctx.clerk?.user?.fullName ?? ctx.clerk?.user?.firstName ?? 'Kamu');
+	const reportDate = $derived(
+		reportQuery.data
+			? new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(
+					new Date(reportQuery.data.createdAt)
+				)
+			: '-'
+	);
 
 	let title = $state('');
 	let type = $state<TicketType>('bug');
@@ -269,11 +280,11 @@
 			<div class="flex flex-wrap items-center gap-x-6 gap-y-1.5">
 				<div class="flex items-center gap-2">
 					<span class="text-xs text-muted">Dilaporkan oleh</span>
-					<span class="text-xs font-medium text-foreground">Rina Wulandari</span>
+					<span class="text-xs font-medium text-foreground">{reporterName}</span>
 				</div>
 				<div class="flex items-center gap-2">
 					<span class="text-xs text-muted">Tanggal</span>
-					<span class="text-xs font-medium text-foreground">17 Juli 2025</span>
+					<span class="text-xs font-medium text-foreground">{reportDate}</span>
 				</div>
 			</div>
 		</div>
