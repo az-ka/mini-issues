@@ -200,11 +200,7 @@
 				<div class="h-10 animate-pulse rounded-xl bg-surface-2"></div>
 			{/each}
 		</div>
-	{:else if !reportQuery.data}
-		<div class="rounded-xl border border-danger/20 bg-danger/5 px-4 py-6 text-center text-sm text-danger">
-			Draft tiket tidak ditemukan atau kamu tidak punya akses ke tiket ini.
-		</div>
-	{:else}
+	{:else if reportQuery.data}
 	<p class="mb-6 text-sm text-muted">
 		Periksa dan edit tiket di bawah sebelum dikirim ke Trello. Semua field bisa diubah.
 	</p>
@@ -444,6 +440,16 @@
 	</div>
 	{/if}
 </div>
+
+<!-- Not found: full-page centered (shown when query resolves but data is null) -->
+{#if !reportQuery.isLoading && !reportQuery.data}
+	<div class="fixed inset-0 flex flex-col items-center justify-center px-4 text-center">
+		<p class="mb-2 font-mono text-5xl font-bold text-accent">404</p>
+		<p class="mb-1 text-base font-semibold text-foreground">Draft tidak ditemukan</p>
+		<p class="mb-6 text-sm text-muted">Draft tiket ini tidak ada atau kamu tidak punya akses.</p>
+		<Button href="/dashboard">Kembali ke Dashboard</Button>
+	</div>
+{/if}
 
 <!-- File preview modal -->
 {#if previewFile}
