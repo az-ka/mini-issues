@@ -217,7 +217,7 @@
 				Judul
 				<span class="text-xs text-muted">{title.length}/80</span>
 			</label>
-			<Input id="title" bind:value={title} placeholder="Ringkasan singkat masalah" />
+			<Input id="title" bind:value={title} placeholder="Ringkasan singkat masalah" disabled={alreadySent} />
 		</div>
 
 		<!-- Tipe & Prioritas -->
@@ -227,7 +227,7 @@
 				<div class="flex flex-col gap-1.5">
 					{#each typeOptions as opt}
 						<label class="flex cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 text-sm transition-colors {type === opt.value ? 'border-accent/40 bg-accent/8 text-foreground' : 'border-border bg-surface text-muted hover:border-border/80 hover:text-foreground'}">
-							<input type="radio" bind:group={type} value={opt.value} class="accent-accent" />
+							<input type="radio" bind:group={type} value={opt.value} class="accent-accent" disabled={alreadySent} />
 							{opt.label}
 						</label>
 					{/each}
@@ -239,7 +239,7 @@
 				<div class="flex flex-col gap-1.5">
 					{#each priorityOptions as opt}
 						<label class="flex cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 text-sm transition-colors {priority === opt.value ? 'border-accent/40 bg-accent/8 text-foreground' : 'border-border bg-surface text-muted hover:border-border/80 hover:text-foreground'}">
-							<input type="radio" bind:group={priority} value={opt.value} class="accent-accent" />
+							<input type="radio" bind:group={priority} value={opt.value} class="accent-accent" disabled={alreadySent} />
 							<span class={opt.color}>{opt.label}</span>
 						</label>
 					{/each}
@@ -250,13 +250,13 @@
 		<!-- Halaman / Modul -->
 		<div>
 			<label for="module" class="mb-1.5 block text-sm font-medium text-foreground">Halaman / Modul</label>
-			<Input id="module" bind:value={module} placeholder="Contoh: Halaman Login, Dashboard, dll." />
+			<Input id="module" bind:value={module} placeholder="Contoh: Halaman Login, Dashboard, dll." disabled={alreadySent} />
 		</div>
 
 		<!-- Deskripsi -->
 		<div>
 			<label for="description" class="mb-1.5 block text-sm font-medium text-foreground">Deskripsi</label>
-			<Textarea id="description" bind:value={description} rows={4} placeholder="Penjelasan lengkap masalah atau request" />
+			<Textarea id="description" bind:value={description} rows={4} placeholder="Penjelasan lengkap masalah atau request" disabled={alreadySent} />
 		</div>
 
 		<!-- Bug-only fields -->
@@ -271,18 +271,18 @@
 					<!-- Steps to Reproduce -->
 					<div>
 						<label for="steps" class="mb-1.5 block text-sm font-medium text-foreground">Steps to Reproduce</label>
-						<Textarea id="steps" bind:value={steps} rows={4} placeholder="Langkah-langkah untuk mereproduksi bug" />
+						<Textarea id="steps" bind:value={steps} rows={4} placeholder="Langkah-langkah untuk mereproduksi bug" disabled={alreadySent} />
 					</div>
 
 					<!-- Expected vs Actual -->
 					<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 						<div>
 							<label for="expected" class="mb-1.5 block text-sm font-medium text-foreground">Expected Behavior</label>
-							<Textarea id="expected" bind:value={expected} rows={3} placeholder="Yang seharusnya terjadi" />
+							<Textarea id="expected" bind:value={expected} rows={3} placeholder="Yang seharusnya terjadi" disabled={alreadySent} />
 						</div>
 						<div>
 							<label for="actual" class="mb-1.5 block text-sm font-medium text-foreground">Actual Behavior</label>
-							<Textarea id="actual" bind:value={actual} rows={3} placeholder="Yang sebenarnya terjadi" />
+							<Textarea id="actual" bind:value={actual} rows={3} placeholder="Yang sebenarnya terjadi" disabled={alreadySent} />
 						</div>
 					</div>
 
@@ -292,7 +292,7 @@
 						<div class="flex flex-wrap gap-2">
 							{#each frequencyOptions as opt}
 								<label class="flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-1.5 text-xs transition-colors {frequency === opt.value ? 'border-accent/40 bg-accent/8 text-foreground' : 'border-border bg-surface text-muted hover:text-foreground'}">
-									<input type="radio" bind:group={frequency} value={opt.value} class="accent-accent" />
+									<input type="radio" bind:group={frequency} value={opt.value} class="accent-accent" disabled={alreadySent} />
 									{opt.label}
 								</label>
 							{/each}
@@ -305,89 +305,93 @@
 		<!-- Dampak Bisnis -->
 		<div>
 			<label for="impact" class="mb-1.5 block text-sm font-medium text-foreground">Dampak Bisnis</label>
-			<Textarea id="impact" bind:value={impact} rows={3} placeholder="Seberapa besar pengaruhnya ke operasional?" />
+			<Textarea id="impact" bind:value={impact} rows={3} placeholder="Seberapa besar pengaruhnya ke operasional?" disabled={alreadySent} />
 		</div>
 
-		<!-- Attachments -->
+		<!-- Attachments: upload zone before sent, saved list after sent -->
 		<div>
-			<p class="mb-1.5 text-sm font-medium text-foreground">
-				Attachment
-				<span class="ml-1 text-xs font-normal text-muted">(opsional, maks 5 file @ 10MB)</span>
-			</p>
-
-			<!-- Drop zone -->
-			<button
-				type="button"
-				class="w-full rounded-xl border-2 border-dashed px-4 py-8 text-center transition-colors {isDragging ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/40 hover:bg-surface'}"
-				ondragover={(e) => { e.preventDefault(); isDragging = true; }}
-				ondragleave={() => (isDragging = false)}
-				ondrop={handleDrop}
-				onclick={() => document.getElementById('file-input')?.click()}
-			>
-				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-2 text-muted">
-					<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-					<polyline points="17 8 12 3 7 8" />
-					<line x1="12" y1="3" x2="12" y2="15" />
-				</svg>
-				<p class="text-sm text-muted">
-					Drag & drop atau <span class="text-accent">pilih file</span>
-				</p>
-				<p class="mt-1 text-xs text-muted/60">JPG, PNG, GIF, MP4, MOV</p>
-			</button>
-
-			<input id="file-input" type="file" multiple accept="image/*,video/mp4,video/quicktime" class="hidden" onchange={handleFileInput} />
-
-			{#if attachments.length > 0}
-				<div class="mt-3 flex flex-col gap-2">
-					{#each attachments as file, i}
-						<div class="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2">
-							<!-- Thumbnail / icon — click to preview -->
-							<button
-								type="button"
-								onclick={() => openPreview(file)}
-								class="shrink-0 cursor-pointer"
-								aria-label="Preview {file.name}"
+			{#if alreadySent}
+				{#if savedAttachments.length > 0}
+					<p class="mb-1.5 text-sm font-medium text-foreground">
+						Attachment
+						<span class="ml-1 text-xs font-normal text-muted">(tersimpan di Trello)</span>
+					</p>
+					<div class="flex flex-col gap-2">
+						{#each savedAttachments as att}
+							<a
+								href={att.url}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2 transition-colors hover:border-accent/40"
 							>
-								{#if isImage(file)}
-									<img
-										src={URL.createObjectURL(file)}
-										alt={file.name}
-										class="h-9 w-9 rounded object-cover ring-1 ring-border"
-									/>
-								{:else if isVideo(file)}
-									<div class="flex h-9 w-9 items-center justify-center rounded bg-surface-2 ring-1 ring-border text-muted">
-										<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-											<polygon points="5 3 19 12 5 21 5 3" />
-										</svg>
-									</div>
-								{:else}
-									<div class="flex h-9 w-9 items-center justify-center rounded bg-surface-2 ring-1 ring-border text-muted">
-										<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-											<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-											<polyline points="14 2 14 8 20 8" />
-										</svg>
-									</div>
-								{/if}
-							</button>
-
-							<button
-								type="button"
-								onclick={() => openPreview(file)}
-								class="min-w-0 flex-1 cursor-pointer text-left"
-								aria-label="Preview {file.name}"
-							>
-								<span class="block truncate text-xs text-foreground hover:text-accent transition-colors">{file.name}</span>
-								<span class="text-xs text-muted">{(file.size / 1024 / 1024).toFixed(1)} MB</span>
-							</button>
-
-							<button type="button" aria-label="Hapus attachment {file.name}" onclick={() => removeAttachment(i)} class="shrink-0 rounded p-0.5 text-muted transition-colors hover:text-danger cursor-pointer">
-								<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-									<line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+								<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-muted">
+									<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+									<polyline points="14 2 14 8 20 8" />
 								</svg>
-							</button>
-						</div>
-					{/each}
-				</div>
+								<span class="min-w-0 flex-1 truncate text-xs text-foreground">{att.name}</span>
+								<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-muted">
+									<path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+								</svg>
+							</a>
+						{/each}
+					</div>
+				{/if}
+			{:else}
+				<p class="mb-1.5 text-sm font-medium text-foreground">
+					Attachment
+					<span class="ml-1 text-xs font-normal text-muted">(opsional, maks 5 file @ 10MB)</span>
+				</p>
+
+				<!-- Drop zone -->
+				<button
+					type="button"
+					class="w-full rounded-xl border-2 border-dashed px-4 py-8 text-center transition-colors {isDragging ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/40 hover:bg-surface'}"
+					ondragover={(e) => { e.preventDefault(); isDragging = true; }}
+					ondragleave={() => (isDragging = false)}
+					ondrop={handleDrop}
+					onclick={() => document.getElementById('file-input')?.click()}
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-2 text-muted">
+						<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+						<polyline points="17 8 12 3 7 8" />
+						<line x1="12" y1="3" x2="12" y2="15" />
+					</svg>
+					<p class="text-sm text-muted">
+						Drag & drop atau <span class="text-accent">pilih file</span>
+					</p>
+					<p class="mt-1 text-xs text-muted/60">JPG, PNG, GIF, MP4, MOV</p>
+				</button>
+
+				<input id="file-input" type="file" multiple accept="image/*,video/mp4,video/quicktime" class="hidden" onchange={handleFileInput} />
+
+				{#if attachments.length > 0}
+					<div class="mt-3 flex flex-col gap-2">
+						{#each attachments as file, i}
+							<div class="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2">
+								<button type="button" onclick={() => openPreview(file)} class="shrink-0 cursor-pointer" aria-label="Preview {file.name}">
+									{#if isImage(file)}
+										<img src={URL.createObjectURL(file)} alt={file.name} class="h-9 w-9 rounded object-cover ring-1 ring-border" />
+									{:else if isVideo(file)}
+										<div class="flex h-9 w-9 items-center justify-center rounded bg-surface-2 ring-1 ring-border text-muted">
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+										</div>
+									{:else}
+										<div class="flex h-9 w-9 items-center justify-center rounded bg-surface-2 ring-1 ring-border text-muted">
+											<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+										</div>
+									{/if}
+								</button>
+								<button type="button" onclick={() => openPreview(file)} class="min-w-0 flex-1 cursor-pointer text-left" aria-label="Preview {file.name}">
+									<span class="block truncate text-xs text-foreground hover:text-accent transition-colors">{file.name}</span>
+									<span class="text-xs text-muted">{(file.size / 1024 / 1024).toFixed(1)} MB</span>
+								</button>
+								<button type="button" aria-label="Hapus attachment {file.name}" onclick={() => removeAttachment(i)} class="shrink-0 rounded p-0.5 text-muted transition-colors hover:text-danger cursor-pointer">
+									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+								</button>
+							</div>
+						{/each}
+					</div>
+				{/if}
 			{/if}
 		</div>
 
@@ -404,35 +408,6 @@
 				</div>
 			</div>
 		</div>
-
-		<!-- Saved attachments (after sent to Trello) -->
-		{#if alreadySent && savedAttachments.length > 0}
-			<div>
-				<p class="mb-1.5 text-sm font-medium text-foreground">
-					Attachment
-					<span class="ml-1 text-xs font-normal text-muted">(tersimpan di Trello)</span>
-				</p>
-				<div class="flex flex-col gap-2">
-					{#each savedAttachments as att}
-						<a
-							href={att.url}
-							target="_blank"
-							rel="noopener noreferrer"
-							class="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2 transition-colors hover:border-accent/40"
-						>
-							<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-muted">
-								<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-								<polyline points="14 2 14 8 20 8" />
-							</svg>
-							<span class="min-w-0 flex-1 truncate text-xs text-foreground">{att.name}</span>
-							<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-muted">
-								<path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-							</svg>
-						</a>
-					{/each}
-				</div>
-			</div>
-		{/if}
 
 		<!-- Actions -->
 		<div class="flex flex-col gap-3 pt-2 pb-8">
