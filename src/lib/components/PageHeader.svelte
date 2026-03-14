@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 
 	interface Props {
 		title: string;
@@ -9,6 +11,14 @@
 	}
 
 	let { title, backHref, backLabel = 'Kembali', right }: Props = $props();
+
+	function goBack() {
+		if (history.length > 1 && document.referrer.startsWith(page.url.origin)) {
+			history.back();
+		} else {
+			goto(backHref ?? '/');
+		}
+	}
 </script>
 
 <header class="mb-6 flex items-center gap-2">
@@ -16,6 +26,10 @@
 		<a
 			href={backHref}
 			aria-label={backLabel}
+			onclick={(e) => {
+				e.preventDefault();
+				goBack();
+			}}
 			class="flex items-center justify-center rounded-lg p-1.5 text-muted transition-colors hover:bg-surface-2 hover:text-foreground"
 		>
 			<svg

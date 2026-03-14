@@ -3,6 +3,7 @@
 	import { useConvexClient, useQuery } from 'convex-svelte';
 	import { useClerkContext } from 'svelte-clerk/client';
 	import { api } from '$convex/api';
+	import type { Id } from '$convex/dataModel';
 	import { getInitials } from '$lib/utils';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -32,9 +33,15 @@
 	const ctx = useClerkContext();
 	const client = useConvexClient();
 	const savedSession = useQuery(api.chatSessions.getSession, () => ({}));
+	const currentReport = useQuery(api.reports.getById, () =>
+		reportId ? { id: reportId as Id<'reports'> } : 'skip'
+	);
 
 	const userInitials = $derived(getInitials(ctx.clerk?.user?.fullName));
 	const userAvatar = $derived(ctx.clerk?.user?.imageUrl);
+
+	// True when chat is done but draft hasn't been sent to Trello yet
+	const isDraftUnsent = $derived(isChatDone && !!reportId && !currentReport.data?.trelloCardId);
 
 	const OPENER: Message = {
 		id: 1,
@@ -229,18 +236,7 @@
 		<PageHeader title="Buat Laporan Baru" backHref="/dashboard" backLabel="Kembali ke Dashboard">
 			{#snippet right()}
 				{#if messages.length > 1 || isChatDone}
-					<Button
-						size="sm"
-						onclick={() => {
-							if (isChatDone) {
-								startFresh();
-							} else {
-								showConfirmReset = true;
-							}
-						}}
-					>
-						+ Mulai Baru
-					</Button>
+					<Button size="sm" onclick={() => (showConfirmReset = true)}>+ Mulai Baru</Button>
 				{/if}
 			{/snippet}
 		</PageHeader>
@@ -409,11 +405,29 @@
 </div>
 
 <!-- Confirm reset dialog -->
-<Dialog open={showConfirmReset} title="Mulai sesi baru?" onclose={() => (showConfirmReset = false)}>
-	Semua pesan di sesi ini akan dihapus dan kamu akan mulai dari awal. Tindakan ini tidak bisa
-	dibatalkan.
+<Dialog
+	open={showConfirmReset}
+	title={isDraftUnsent ? 'Draft belum dikirim ke Trello!' : 'Mulai sesi baru?'}
+	onclose={() => (showConfirmReset = false)}
+>
+	{#if isDraftUnsent}
+		Draft tiket kamu belum dikirim ke Trello. Jika kamu mulai sesi baru, draft ini tetap tersimpan
+		dan bisa diakses di <strong class="text-foreground">Riwayat</strong>.
+	{:else}
+		Semua pesan di sesi ini akan dihapus dan kamu akan mulai dari awal. Tindakan ini tidak bisa
+		dibatalkan.
+	{/if}
 	{#snippet footer()}
 		<Button size="sm" variant="secondary" onclick={() => (showConfirmReset = false)}>Batal</Button>
-		<Button size="sm" variant="danger" onclick={startFresh}>Ya, hapus sesi</Button>
+		{#if isDraftUnsent}
+			<Button
+				size="sm"
+				href="/report/preview/{reportId}"
+				onclick={() => (showConfirmReset = false)}
+			>
+				Kirim Dulu
+			</Button>
+		{/if}
+		<Button size="sm" variant="danger" onclick={startFresh}>Ya, Mulai Baru</Button>
 	{/snippet}
 </Dialog>

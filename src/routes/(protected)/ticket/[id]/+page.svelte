@@ -5,6 +5,7 @@
 	import type { Id } from '$convex/dataModel';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import TicketStatusBadge from '$lib/components/ui/TicketStatusBadge.svelte';
 	import NotFound from '$lib/components/ui/NotFound.svelte';
 	import { TYPE_COLOR, TYPE_LABEL, PRIORITY_COLOR, PRIORITY_LABEL } from '$lib/constants/ticket';
@@ -16,6 +17,7 @@
 	const reporterQuery = useQuery(api.users.getById, () =>
 		reportQuery.data ? { id: reportQuery.data.reporterId } : 'skip'
 	);
+	const meQuery = useQuery(api.users.currentUser, () => ({}));
 
 	function parseAttachments(json: string | undefined): { name: string; url: string }[] {
 		if (!json) return [];
@@ -28,6 +30,7 @@
 
 	const report = $derived(reportQuery.data);
 	const reporterName = $derived(reporterQuery.data?.name ?? 'Tidak diketahui');
+	const isOwner = $derived(!!meQuery.data && meQuery.data._id === report?.reporterId);
 	const isBug = $derived(report?.type === 'bug');
 	const ticketId = $derived(
 		report?.ticketNumber ? `MI-${String(report.ticketNumber).padStart(3, '0')}` : '—'
@@ -105,6 +108,33 @@
 				<p class="text-xs leading-relaxed text-warning">
 					Card Trello untuk tiket ini telah diarsipkan. Data tiket tetap tersimpan di sini.
 				</p>
+			</div>
+		{/if}
+
+		<!-- Alert: draft not yet sent to Trello — only visible to the creator -->
+		{#if report.status === 'draft' && isOwner}
+			<div
+				class="mb-4 flex items-center justify-between gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3"
+			>
+				<div class="flex items-center gap-2.5">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="14"
+						height="14"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="shrink-0 text-warning"
+					>
+						<circle cx="12" cy="12" r="10" />
+						<polyline points="12 6 12 12 16 14" />
+					</svg>
+					<p class="text-xs text-warning">Tiket ini belum dikirim ke Trello.</p>
+				</div>
+				<Button href="/report/preview/{report._id}" size="sm">Kirim Sekarang</Button>
 			</div>
 		{/if}
 
@@ -369,28 +399,30 @@
 				</div>
 			{/if}
 
-			<!-- Read-only notice -->
-			<div class="flex items-start gap-2.5 rounded-xl border border-border bg-surface px-4 py-3">
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					width="14"
-					height="14"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					class="mt-0.5 shrink-0 text-muted"
-				>
-					<rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-					<path d="M7 11V7a5 5 0 0110 0v4" />
-				</svg>
-				<p class="text-xs leading-relaxed text-muted">
-					Tiket ini sudah dikirim dan tidak dapat diedit. Jika ada perubahan, silakan hubungi
-					developer langsung melalui Whatsapp.
-				</p>
-			</div>
+			<!-- Read-only notice — only shown after ticket is sent to Trello -->
+			{#if report.status !== 'draft'}
+				<div class="flex items-start gap-2.5 rounded-xl border border-border bg-surface px-4 py-3">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="14"
+						height="14"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="mt-0.5 shrink-0 text-muted"
+					>
+						<rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+						<path d="M7 11V7a5 5 0 0110 0v4" />
+					</svg>
+					<p class="text-xs leading-relaxed text-muted">
+						Tiket ini sudah dikirim dan tidak dapat diedit. Jika ada perubahan, silakan hubungi
+						developer langsung melalui Whatsapp.
+					</p>
+				</div>
+			{/if}
 		</div>
 
 		<div class="pb-8"></div>

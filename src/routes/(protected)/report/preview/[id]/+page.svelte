@@ -194,7 +194,7 @@
 </script>
 
 <div class="mx-auto max-w-2xl px-4 py-8">
-	<PageHeader title="Preview & Edit Tiket" backHref="/report/chat" backLabel="Kembali ke Chat" />
+	<PageHeader title="Preview & Edit Tiket" backHref="/history" backLabel="Kembali" />
 
 	{#if reportQuery.isLoading}
 		<div class="flex flex-col gap-3 pt-4">
