@@ -14,27 +14,14 @@ export default defineSchema({
 		name: v.optional(v.string()),
 		email: v.optional(v.string()),
 		picture: v.optional(v.string()),
-		clerkId: v.string(), // The 'subject' from Clerk JWT
-		role: v.union(v.literal('reporter'), v.literal('developer'), v.literal('admin')),
-		departmentId: v.optional(v.id('departments'))
+		clerkId: v.string() // The 'subject' from Clerk JWT
 	}).index('by_clerk_id', ['clerkId']),
-
-	departments: defineTable({
-		name: v.string(),
-		slug: v.string(),
-		isActive: v.boolean()
-	}).index('by_slug', ['slug']),
 
 	reports: defineTable({
 		title: v.string(),
 		type: v.union(v.literal('bug'), v.literal('feature'), v.literal('improvement')),
-		departmentId: v.optional(v.id('departments')),
 		reporterId: v.id('users'),
-		assigneeId: v.optional(v.id('users')),
 		status: v.string(),
-		voteCount: v.number(),
-		duplicateOfId: v.optional(v.id('reports')),
-		timelineEstimate: v.optional(v.string()),
 
 		// Common fields
 		module: v.optional(v.string()),
@@ -43,17 +30,10 @@ export default defineSchema({
 
 		// Bug-specific fields
 		priority: v.optional(v.string()),
-		environment: v.optional(v.string()),
 		stepsToReproduce: v.optional(v.string()),
 		frequency: v.optional(v.string()),
 		expectedResult: v.optional(v.string()),
 		actualResult: v.optional(v.string()),
-
-		// Feature-specific fields
-		businessUrgency: v.optional(v.string()),
-		userStory: v.optional(v.string()),
-		currentProblem: v.optional(v.string()),
-		acceptanceCriteria: v.optional(v.string()),
 
 		createdAt: v.number(),
 		updatedAt: v.number(),
@@ -71,34 +51,7 @@ export default defineSchema({
 		ticketNumber: v.optional(v.number()) // Sequential MI-XXX number
 	})
 		.index('by_reporter', ['reporterId'])
-		.index('by_department', ['departmentId'])
 		.index('by_status', ['status']),
-
-	comments: defineTable({
-		reportId: v.id('reports'),
-		authorId: v.id('users'),
-		content: v.string(),
-		parentId: v.optional(v.id('comments')),
-		isPrivate: v.boolean(),
-		editedAt: v.optional(v.number()),
-		createdAt: v.number()
-	}).index('by_report', ['reportId']),
-
-	votes: defineTable({
-		reportId: v.id('reports'),
-		userId: v.id('users'),
-		departmentName: v.string() // Snapshot of user's department at time of vote
-	}).index('by_report_and_user', ['reportId', 'userId']),
-
-	notifications: defineTable({
-		userId: v.id('users'),
-		reportId: v.id('reports'),
-		commentId: v.optional(v.id('comments')),
-		type: v.string(), // status_change, mention, assigned
-		content: v.string(),
-		isRead: v.boolean(),
-		createdAt: v.number()
-	}).index('by_user_unread', ['userId', 'isRead']),
 
 	// One active chat session per user — persists across refreshes and devices
 	chatSessions: defineTable({

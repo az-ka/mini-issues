@@ -24,8 +24,7 @@ export const syncUser = mutation({
 				name: identity.name,
 				email: identity.email,
 				picture: identity.pictureUrl,
-				clerkId: identity.subject,
-				role: 'reporter' // Default role
+				clerkId: identity.subject
 			});
 		}
 

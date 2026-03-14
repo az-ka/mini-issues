@@ -48,7 +48,6 @@ export const saveDraft = mutation({
 			type: TYPE_MAP[args.type] ?? 'bug',
 			status: 'draft',
 			reporterId: user._id,
-			voteCount: 0,
 			priority: args.priority.toLowerCase(),
 			module: args.module,
 			description: args.description,
