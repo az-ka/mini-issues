@@ -46,39 +46,77 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	if (shouldFetch) {
 		try {
 			const res = await fetch(
-				`${TRELLO_BASE}/cards/${report.trelloCardId}?key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}&fields=idList`,
+				`${TRELLO_BASE}/cards/${report.trelloCardId}?key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}&fields=idList,idBoard,closed`,
 				{ headers: { Accept: 'application/json' } }
 			);
 
 			if (res.ok) {
-				const card = await res.json();
+				const card: { idList: string; idBoard: string; closed: boolean } = await res.json();
+				const isArchived = card.closed === true;
 
-				// Fetch the list name from the list ID
-				const listRes = await fetch(
-					`${TRELLO_BASE}/lists/${card.idList}?key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}&fields=name`,
+				// Fetch all open lists from the board, sorted by pos (left → right)
+				let trelloListIndex: number | undefined;
+				let trelloTotalLists: number | undefined;
+				let listName: string | undefined;
+
+				const listsRes = await fetch(
+					`${TRELLO_BASE}/boards/${card.idBoard}/lists?key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}&fields=id,name,pos&filter=open`,
 					{ headers: { Accept: 'application/json' } }
 				);
-				const listName: string | undefined = listRes.ok
-					? (await listRes.json()).name
-					: undefined;
+				if (listsRes.ok) {
+					const lists: { id: string; name: string; pos: number }[] = await listsRes.json();
+					lists.sort((a, b) => a.pos - b.pos);
+					trelloTotalLists = lists.length;
+					const idx = lists.findIndex((l) => l.id === card.idList);
+					if (idx !== -1) {
+						trelloListIndex = idx;
+						listName = lists[idx].name;
+					}
+				}
 
 				await convex.mutation(api.reports.updateTrelloStatus, {
 					id: params.id as Id<'reports'>,
 					trelloStatus: listName,
 					trelloCardFound: true,
+					trelloArchived: isArchived,
+					trelloListIndex,
+					trelloTotalLists,
 					trelloLastFetched: Date.now()
 				});
 
-				return { report: { ...report, trelloStatus: listName, trelloCardFound: true }, reporterName };
+				return {
+					report: {
+						...report,
+						trelloStatus: listName,
+						trelloCardFound: true,
+						trelloArchived: isArchived,
+						trelloListIndex,
+						trelloTotalLists
+					},
+					reporterName
+				};
 			} else if (res.status === 404) {
 				await convex.mutation(api.reports.updateTrelloStatus, {
 					id: params.id as Id<'reports'>,
 					trelloStatus: undefined,
 					trelloCardFound: false,
+					trelloArchived: false,
+					trelloListIndex: undefined,
+					trelloTotalLists: undefined,
 					trelloLastFetched: Date.now()
 				});
 
-				return { report: { ...report, trelloStatus: undefined, trelloCardFound: false }, reporterName };
+				return {
+					report: {
+						...report,
+						trelloStatus: undefined,
+						trelloCardFound: false,
+						trelloArchived: false,
+						trelloListIndex: undefined,
+						trelloTotalLists: undefined
+					},
+					reporterName
+				};
 			}
 		} catch {
 			// Trello fetch failed — return cached data, don't crash the page

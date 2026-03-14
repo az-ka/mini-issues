@@ -132,6 +132,9 @@ export const updateTrelloStatus = mutation({
 		id: v.id('reports'),
 		trelloStatus: v.optional(v.string()),
 		trelloCardFound: v.boolean(),
+		trelloArchived: v.optional(v.boolean()),
+		trelloListIndex: v.optional(v.number()),
+		trelloTotalLists: v.optional(v.number()),
 		trelloLastFetched: v.number()
 	},
 	handler: async (ctx, args) => {
@@ -144,6 +147,9 @@ export const updateTrelloStatus = mutation({
 		await ctx.db.patch(args.id, {
 			trelloStatus: args.trelloStatus,
 			trelloCardFound: args.trelloCardFound,
+			trelloArchived: args.trelloArchived,
+			trelloListIndex: args.trelloListIndex,
+			trelloTotalLists: args.trelloTotalLists,
 			trelloLastFetched: args.trelloLastFetched,
 			updatedAt: Date.now()
 		});

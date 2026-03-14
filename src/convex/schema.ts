@@ -63,7 +63,10 @@ export default defineSchema({
 		trelloCardUrl: v.optional(v.string()),
 		attachmentUrls: v.optional(v.string()), // JSON array of { name, url }
 		trelloStatus: v.optional(v.string()), // Name of the Trello list the card is in
-		trelloCardFound: v.optional(v.boolean()), // false if card was deleted/not found on last fetch
+		trelloCardFound: v.optional(v.boolean()), // false if card was deleted (404) on last fetch
+		trelloArchived: v.optional(v.boolean()), // true if card.closed === true (archived in Trello)
+		trelloListIndex: v.optional(v.number()), // 0-based index of the card's list (sorted by pos)
+		trelloTotalLists: v.optional(v.number()), // Total open lists on the board at time of fetch
 		trelloLastFetched: v.optional(v.number()), // Epoch ms of last Trello status fetch
 		ticketNumber: v.optional(v.number()) // Sequential MI-XXX number
 	})
