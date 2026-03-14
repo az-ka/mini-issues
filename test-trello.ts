@@ -19,7 +19,7 @@ if (!res.ok) {
 	process.exit(1);
 }
 
-const lists = await res.json() as { id: string; name: string }[];
+const lists = (await res.json()) as { id: string; name: string }[];
 
 console.log('✅ Daftar list di board "mini-issue":\n');
 console.log('─'.repeat(50));

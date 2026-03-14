@@ -5,12 +5,14 @@
 
 	$effect(() => {
 		const executeRedirect = () => {
-			ctx.clerk?.handleRedirectCallback({
-				signInForceRedirectUrl: '/dashboard',
-				signUpForceRedirectUrl: '/dashboard'
-			}).catch((err) => {
-				console.error('[sso-callback] Error in handleRedirectCallback:', err);
-			});
+			ctx.clerk
+				?.handleRedirectCallback({
+					signInForceRedirectUrl: '/dashboard',
+					signUpForceRedirectUrl: '/dashboard'
+				})
+				.catch((err) => {
+					console.error('[sso-callback] Error in handleRedirectCallback:', err);
+				});
 		};
 
 		if (ctx.clerk?.loaded) {

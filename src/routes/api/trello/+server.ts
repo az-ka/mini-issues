@@ -52,18 +52,15 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	}
 
 	// Step 1: Create Trello card
-	const cardRes = await fetch(
-		`${TRELLO_BASE}/cards?key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}`,
-		{
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-			body: JSON.stringify({
-				idList: TRELLO_LIST_ID,
-				name: title,
-				desc: buildCardDescription(fields)
-			})
-		}
-	);
+	const cardRes = await fetch(`${TRELLO_BASE}/cards?key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+		body: JSON.stringify({
+			idList: TRELLO_LIST_ID,
+			name: title,
+			desc: buildCardDescription(fields)
+		})
+	});
 
 	if (!cardRes.ok) {
 		const msg = await cardRes.text();
@@ -71,7 +68,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		error(502, 'Gagal membuat card di Trello.');
 	}
 
-	const card = await cardRes.json() as { id: string; url: string };
+	const card = (await cardRes.json()) as { id: string; url: string };
 
 	// Step 2: Upload attachments (sequential to avoid rate limits)
 	const attachmentUrls: { name: string; url: string }[] = [];
@@ -88,7 +85,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		);
 
 		if (attachRes.ok) {
-			const attachment = await attachRes.json() as { name: string; url: string };
+			const attachment = (await attachRes.json()) as { name: string; url: string };
 			attachmentUrls.push({ name: attachment.name, url: attachment.url });
 		} else {
 			console.warn(`[/api/trello] Failed to upload attachment: ${file.name}`);

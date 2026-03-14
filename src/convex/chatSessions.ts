@@ -1,7 +1,9 @@
 import { ConvexError, v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 
-async function getClerkId(ctx: { auth: { getUserIdentity: () => Promise<{ subject: string } | null> } }) {
+async function getClerkId(ctx: {
+	auth: { getUserIdentity: () => Promise<{ subject: string } | null> };
+}) {
 	const identity = await ctx.auth.getUserIdentity();
 	if (!identity) throw new ConvexError('Not authenticated');
 	return identity.subject;

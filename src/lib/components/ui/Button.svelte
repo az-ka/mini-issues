@@ -35,7 +35,8 @@
 		secondary:
 			'bg-surface-2 text-foreground border border-border hover:border-accent/30 hover:bg-border active:scale-[0.98]',
 		ghost: 'text-muted hover:text-foreground hover:bg-surface-2 active:scale-[0.98]',
-		danger: 'bg-danger/10 text-danger border border-danger/25 hover:bg-danger/20 active:scale-[0.98]'
+		danger:
+			'bg-danger/10 text-danger border border-danger/25 hover:bg-danger/20 active:scale-[0.98]'
 	};
 
 	const sizeClasses: Record<Size, string> = {
@@ -54,12 +55,7 @@
 		{@render children()}
 	</a>
 {:else}
-	<button
-		{type}
-		{disabled}
-		{onclick}
-		class={baseClass}
-	>
+	<button {type} {disabled} {onclick} class={baseClass}>
 		{@render children()}
 	</button>
 {/if}

@@ -181,7 +181,7 @@
 			const { text: aiText } = await res.json();
 
 			const extracted = extractDraft(aiText);
-		if (extracted) {
+			if (extracted) {
 				const draft: TicketDraft = JSON.parse(extracted.json);
 				const id = await saveDraftToConvex(draft);
 
@@ -225,7 +225,6 @@
 </script>
 
 <div class="mx-auto flex min-h-dvh max-w-2xl flex-col px-4">
-
 	<div class="sticky top-0 z-10 bg-bg pt-6 pb-3">
 		<PageHeader title="Buat Laporan Baru" backHref="/dashboard" backLabel="Kembali ke Dashboard">
 			{#snippet right()}
@@ -254,29 +253,37 @@
 			{#each messages as message (message.id)}
 				{#if message.role === 'ai'}
 					<div class="flex items-start gap-3">
-						<div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-accent/20 bg-accent/10 text-xs font-semibold text-accent">
+						<div
+							class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-accent/20 bg-accent/10 text-xs font-semibold text-accent"
+						>
 							AI
 						</div>
-						<div class="max-w-[85%] rounded-2xl rounded-tl-sm border border-border bg-surface px-4 py-3 text-sm text-foreground leading-relaxed">
+						<div
+							class="max-w-[85%] rounded-2xl rounded-tl-sm border border-border bg-surface px-4 py-3 text-sm leading-relaxed text-foreground"
+						>
 							{message.text}
 						</div>
 					</div>
 				{:else}
 					<div class="flex items-start justify-end gap-3">
-						<div class="max-w-[85%] rounded-2xl rounded-tr-sm bg-accent/15 border border-accent/20 px-4 py-3 text-sm text-foreground leading-relaxed">
+						<div
+							class="max-w-[85%] rounded-2xl rounded-tr-sm border border-accent/20 bg-accent/15 px-4 py-3 text-sm leading-relaxed text-foreground"
+						>
 							{message.text}
 						</div>
 						{#if userAvatar}
-						<img
-							src={userAvatar}
-							alt={userInitials}
-							class="h-8 w-8 shrink-0 rounded-full object-cover ring-1 ring-border"
-						/>
-					{:else}
-						<div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-2 text-xs font-semibold text-muted">
-							{userInitials}
-						</div>
-					{/if}
+							<img
+								src={userAvatar}
+								alt={userInitials}
+								class="h-8 w-8 shrink-0 rounded-full object-cover ring-1 ring-border"
+							/>
+						{:else}
+							<div
+								class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-2 text-xs font-semibold text-muted"
+							>
+								{userInitials}
+							</div>
+						{/if}
 					</div>
 				{/if}
 			{/each}
@@ -284,13 +291,20 @@
 			<!-- Typing indicator -->
 			{#if isLoading}
 				<div class="flex items-start gap-3">
-					<div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-accent/20 bg-accent/10 text-xs font-semibold text-accent">
+					<div
+						class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-accent/20 bg-accent/10 text-xs font-semibold text-accent"
+					>
 						AI
 					</div>
-					<div class="flex items-center gap-1.5 rounded-2xl rounded-tl-sm border border-border bg-surface px-4 py-3">
-						<span class="h-1.5 w-1.5 animate-bounce rounded-full bg-muted [animation-delay:0ms]"></span>
-						<span class="h-1.5 w-1.5 animate-bounce rounded-full bg-muted [animation-delay:150ms]"></span>
-						<span class="h-1.5 w-1.5 animate-bounce rounded-full bg-muted [animation-delay:300ms]"></span>
+					<div
+						class="flex items-center gap-1.5 rounded-2xl rounded-tl-sm border border-border bg-surface px-4 py-3"
+					>
+						<span class="h-1.5 w-1.5 animate-bounce rounded-full bg-muted [animation-delay:0ms]"
+						></span>
+						<span class="h-1.5 w-1.5 animate-bounce rounded-full bg-muted [animation-delay:150ms]"
+						></span>
+						<span class="h-1.5 w-1.5 animate-bounce rounded-full bg-muted [animation-delay:300ms]"
+						></span>
 					</div>
 				</div>
 			{/if}
@@ -310,19 +324,33 @@
 
 			<!-- Preview CTA — shown when AI finishes gathering info -->
 			{#if isChatDone}
-				<div class="mx-auto mt-2 w-full max-w-sm rounded-2xl border border-accent/20 bg-accent/5 p-5 text-center">
+				<div
+					class="mx-auto mt-2 w-full max-w-sm rounded-2xl border border-accent/20 bg-accent/5 p-5 text-center"
+				>
 					<p class="mb-1 text-sm font-medium text-foreground">Informasi sudah lengkap!</p>
 					<p class="mb-4 text-xs text-muted">Cek dan edit draft tiket sebelum dikirim ke Trello.</p>
 					{#if reportId}
 						<Button href="/report/preview/{reportId}" size="lg" class="w-full">
 							Lihat Preview Tiket
-							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="16"
+								height="16"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							>
 								<path d="M5 12h14" /><path d="M12 5l7 7-7 7" />
 							</svg>
 						</Button>
 					{:else}
 						<div class="flex items-center justify-center gap-2 text-xs text-muted">
-							<div class="h-4 w-4 animate-spin rounded-full border-2 border-accent border-t-transparent"></div>
+							<div
+								class="h-4 w-4 animate-spin rounded-full border-2 border-accent border-t-transparent"
+							></div>
 							Menyimpan draft...
 						</div>
 					{/if}
@@ -334,9 +362,11 @@
 	</div>
 
 	<div class="sticky bottom-0 bg-bg py-4">
-		<div class="h-px bg-border mb-4"></div>
+		<div class="mb-4 h-px bg-border"></div>
 		{#if isChatDone}
-			<p class="text-center text-xs text-muted">Sesi chat selesai. Lanjut ke preview tiket di atas.</p>
+			<p class="text-center text-xs text-muted">
+				Sesi chat selesai. Lanjut ke preview tiket di atas.
+			</p>
 		{:else}
 			<div class="flex items-end gap-2">
 				<textarea
@@ -346,7 +376,7 @@
 					placeholder="Ceritakan masalah atau permintaanmu..."
 					rows={1}
 					disabled={isLoading || isChatDone}
-					class="flex-1 max-h-[120px] resize-none overflow-y-auto rounded-xl border border-border bg-surface-2 px-4 py-3 text-sm text-foreground placeholder:text-muted/60 transition-colors focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/15 disabled:cursor-not-allowed disabled:opacity-50"
+					class="max-h-[120px] flex-1 resize-none overflow-y-auto rounded-xl border border-border bg-surface-2 px-4 py-3 text-sm text-foreground transition-colors placeholder:text-muted/60 focus:border-accent/50 focus:ring-2 focus:ring-accent/15 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 				></textarea>
 				<button
 					type="button"
@@ -376,17 +406,13 @@
 			</p>
 		{/if}
 	</div>
-
 </div>
 
 <!-- Confirm reset dialog -->
-<Dialog
-	open={showConfirmReset}
-	title="Mulai sesi baru?"
-	onclose={() => (showConfirmReset = false)}
->
+<Dialog open={showConfirmReset} title="Mulai sesi baru?" onclose={() => (showConfirmReset = false)}>
 	{#snippet children()}
-		Semua pesan di sesi ini akan dihapus dan kamu akan mulai dari awal. Tindakan ini tidak bisa dibatalkan.
+		Semua pesan di sesi ini akan dihapus dan kamu akan mulai dari awal. Tindakan ini tidak bisa
+		dibatalkan.
 	{/snippet}
 	{#snippet footer()}
 		<Button size="sm" variant="secondary" onclick={() => (showConfirmReset = false)}>Batal</Button>

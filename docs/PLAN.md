@@ -4,7 +4,7 @@
 
 **Versi:** 1.0  
 **Status:** Draft  
-**Bahasa Antarmuka:** Bahasa Indonesia  
+**Bahasa Antarmuka:** Bahasa Indonesia
 
 ---
 
@@ -60,14 +60,15 @@ Mini Issues adalah web tool internal yang bertindak sebagai **jembatan** antara 
 
 Siapa pun di luar tim developer yang perlu melaporkan masalah atau mengajukan permintaan. Mereka tidak harus melek teknis.
 
-| Contoh Peran | Kebutuhan Umum |
-|---|---|
-| QA / Tester | Melaporkan bug hasil testing |
-| Product Manager | Mengajukan feature request |
-| Operasional | Melaporkan masalah yang menghambat kerja |
-| Customer Support | Mengeskalasi keluhan pelanggan |
+| Contoh Peran     | Kebutuhan Umum                           |
+| ---------------- | ---------------------------------------- |
+| QA / Tester      | Melaporkan bug hasil testing             |
+| Product Manager  | Mengajukan feature request               |
+| Operasional      | Melaporkan masalah yang menghambat kerja |
+| Customer Support | Mengeskalasi keluhan pelanggan           |
 
 **Karakteristik yang perlu diperhatikan:**
+
 - Tidak terbiasa dengan format tiket teknis
 - Tidak tahu apa itu "steps to reproduce" atau "expected behavior"
 - Lebih nyaman bercerita daripada mengisi form
@@ -182,33 +183,36 @@ Tiket yang sudah dikirim tersimpan di riwayat reporter. Reporter bisa melihatnya
 
 ### 5.1 Daftar Halaman
 
-| Halaman | Siapa yang Akses | Fungsi |
-|---|---|---|
-| Login | Semua | Masuk dengan email |
-| Dashboard | Reporter | Titik awal — buat laporan baru atau lihat riwayat |
-| Chat | Reporter | Sesi tanya-jawab dengan AI |
-| Preview & Edit | Reporter | Review, edit, upload attachment, konfirmasi |
-| Konfirmasi Sukses | Reporter | Notifikasi berhasil kirim + link Trello |
-| Riwayat Tiket | Reporter | Lihat semua tiket yang pernah dibuat |
-| Detail Tiket | Reporter | Lihat isi tiket + status terkini dari Trello |
-| Admin — Whitelist | Admin | Kelola daftar email yang diizinkan akses |
+| Halaman           | Siapa yang Akses | Fungsi                                            |
+| ----------------- | ---------------- | ------------------------------------------------- |
+| Login             | Semua            | Masuk dengan email                                |
+| Dashboard         | Reporter         | Titik awal — buat laporan baru atau lihat riwayat |
+| Chat              | Reporter         | Sesi tanya-jawab dengan AI                        |
+| Preview & Edit    | Reporter         | Review, edit, upload attachment, konfirmasi       |
+| Konfirmasi Sukses | Reporter         | Notifikasi berhasil kirim + link Trello           |
+| Riwayat Tiket     | Reporter         | Lihat semua tiket yang pernah dibuat              |
+| Detail Tiket      | Reporter         | Lihat isi tiket + status terkini dari Trello      |
+| Admin — Whitelist | Admin            | Kelola daftar email yang diizinkan akses          |
 
 ---
 
 ### 5.2 Fitur per Halaman
 
 #### Dashboard
+
 - Tombol "Buat Laporan Baru" yang menonjol
 - Daftar ringkas tiket terbaru (judul, tipe, status, tanggal)
 - Bisa klik tiket untuk lihat detail
 
 #### Chat dengan AI
+
 - Input teks bebas
 - Riwayat percakapan terlihat seperti chat biasa
 - Indikator "AI sedang mengetik..."
 - Tombol lanjut ke Preview muncul saat AI sudah selesai menggali informasi
 
 #### Preview & Edit
+
 - Tampilan tiket lengkap sebelum dikirim
 - Semua field bisa diedit inline
 - Area upload attachment (drag & drop atau klik untuk pilih file)
@@ -217,6 +221,7 @@ Tiket yang sudah dikirim tersimpan di riwayat reporter. Reporter bisa melihatnya
 - Tombol "Kirim ke Trello" dan tombol "Kembali ke Chat"
 
 #### Riwayat & Detail Tiket
+
 - Daftar semua tiket yang pernah dibuat reporter ini
 - Filter berdasarkan tipe (Bug / Feature / Improvement) dan status
 - Status tiket diambil real-time dari Trello (nama list tempat card berada)
@@ -224,6 +229,7 @@ Tiket yang sudah dikirim tersimpan di riwayat reporter. Reporter bisa melihatnya
 - Link ke Trello card tersedia
 
 #### Admin — Whitelist
+
 - Tabel daftar email yang sudah diizinkan
 - Form tambah email baru
 - Tombol hapus email
@@ -251,10 +257,10 @@ Reporter buka Mini Issues
 
 ### Peran & Hak Akses
 
-| Peran | Hak Akses |
-|---|---|
+| Peran    | Hak Akses                                            |
+| -------- | ---------------------------------------------------- |
 | Reporter | Login, buat tiket, lihat & track tiket milik sendiri |
-| Admin | Semua hak reporter + kelola whitelist email |
+| Admin    | Semua hak reporter + kelola whitelist email          |
 
 > Developer tidak perlu punya akun di Mini Issues. Mereka bekerja langsung di Trello.
 
@@ -279,6 +285,7 @@ AI berperan sebagai **interviewer yang ramah**, bukan sebagai form yang kaku. Tu
 AI menyesuaikan pertanyaan berdasarkan tipe laporan yang terdeteksi:
 
 **Untuk Bug:**
+
 - Di halaman atau bagian mana bug ini terjadi?
 - Apa yang seharusnya terjadi (expected)?
 - Apa yang sebenarnya terjadi (actual)?
@@ -287,6 +294,7 @@ AI menyesuaikan pertanyaan berdasarkan tipe laporan yang terdeteksi:
 - Apakah ini menghambat pekerjaan? Seberapa parah dampaknya?
 
 **Untuk Feature Request / Improvement:**
+
 - Apa masalah atau kebutuhan yang melatarbelakangi request ini?
 - Siapa yang akan menggunakan fitur ini?
 - Bagaimana gambaran solusi yang diinginkan?
@@ -317,21 +325,21 @@ AI berhenti menggali informasi ketika semua field wajib tiket sudah terisi cukup
 
 Berikut adalah semua field yang ada di sebuah tiket. AI bertanggung jawab mengisi field ini berdasarkan percakapan.
 
-| Field | Deskripsi | Wajib? |
-|---|---|---|
-| **Judul** | Ringkasan singkat, maks 80 karakter | Ya |
-| **Tipe** | Bug / Feature Request / Improvement | Ya |
-| **Prioritas** | High / Medium / Low (saran dari AI) | Ya |
-| **Deskripsi** | Penjelasan lengkap masalah atau request | Ya |
-| **Steps to Reproduce** | Langkah untuk mereproduksi (khusus Bug) | Jika Bug |
-| **Expected Behavior** | Apa yang seharusnya terjadi | Jika Bug |
-| **Actual Behavior** | Apa yang sebenarnya terjadi | Jika Bug |
-| **Halaman / Modul** | Di mana masalah terjadi di aplikasi | Ya |
-| **Frekuensi** | Selalu / Kadang-kadang / Sekali | Jika Bug |
-| **Dampak Bisnis** | Seberapa besar pengaruhnya ke operasional | Ya |
-| **Attachment** | Gambar atau video pendukung | Tidak (opsional) |
-| **Dilaporkan Oleh** | Nama & email reporter | Otomatis dari login |
-| **Tanggal Laporan** | Kapan tiket dibuat | Otomatis dari sistem |
+| Field                  | Deskripsi                                 | Wajib?               |
+| ---------------------- | ----------------------------------------- | -------------------- |
+| **Judul**              | Ringkasan singkat, maks 80 karakter       | Ya                   |
+| **Tipe**               | Bug / Feature Request / Improvement       | Ya                   |
+| **Prioritas**          | High / Medium / Low (saran dari AI)       | Ya                   |
+| **Deskripsi**          | Penjelasan lengkap masalah atau request   | Ya                   |
+| **Steps to Reproduce** | Langkah untuk mereproduksi (khusus Bug)   | Jika Bug             |
+| **Expected Behavior**  | Apa yang seharusnya terjadi               | Jika Bug             |
+| **Actual Behavior**    | Apa yang sebenarnya terjadi               | Jika Bug             |
+| **Halaman / Modul**    | Di mana masalah terjadi di aplikasi       | Ya                   |
+| **Frekuensi**          | Selalu / Kadang-kadang / Sekali           | Jika Bug             |
+| **Dampak Bisnis**      | Seberapa besar pengaruhnya ke operasional | Ya                   |
+| **Attachment**         | Gambar atau video pendukung               | Tidak (opsional)     |
+| **Dilaporkan Oleh**    | Nama & email reporter                     | Otomatis dari login  |
+| **Tanggal Laporan**    | Kapan tiket dibuat                        | Otomatis dari sistem |
 
 ---
 
@@ -365,13 +373,13 @@ Untuk menampilkan status tiket di riwayat reporter, web app membaca **posisi car
 
 Contoh pemetaan status:
 
-| List di Trello | Status yang ditampilkan di Mini Issues |
-|---|---|
-| Incoming / Backlog | Menunggu Review |
-| In Progress / Doing | Sedang Dikerjakan |
-| Review / Testing | Dalam Review |
-| Done / Completed | Selesai |
-| Won't Fix / Rejected | Ditolak |
+| List di Trello       | Status yang ditampilkan di Mini Issues |
+| -------------------- | -------------------------------------- |
+| Incoming / Backlog   | Menunggu Review                        |
+| In Progress / Doing  | Sedang Dikerjakan                      |
+| Review / Testing     | Dalam Review                           |
+| Done / Completed     | Selesai                                |
+| Won't Fix / Rejected | Ditolak                                |
 
 > Pemetaan nama list → label status ini dikonfigurasi saat setup oleh developer.
 
@@ -388,13 +396,13 @@ Contoh pemetaan status:
 
 ### Aturan
 
-| Aspek | Ketentuan |
-|---|---|
-| Kapan bisa upload | Hanya di halaman Preview, sebelum tiket dikirim |
-| Tipe file yang diterima | Gambar (JPG, PNG, GIF) dan Video (MP4, MOV) |
-| Ukuran maksimal | 10MB per file |
-| Jumlah file | Tidak lebih dari 5 file per tiket |
-| Wajib? | Tidak — sepenuhnya opsional |
+| Aspek                   | Ketentuan                                       |
+| ----------------------- | ----------------------------------------------- |
+| Kapan bisa upload       | Hanya di halaman Preview, sebelum tiket dikirim |
+| Tipe file yang diterima | Gambar (JPG, PNG, GIF) dan Video (MP4, MOV)     |
+| Ukuran maksimal         | 10MB per file                                   |
+| Jumlah file             | Tidak lebih dari 5 file per tiket               |
+| Wajib?                  | Tidak — sepenuhnya opsional                     |
 
 ### Kenapa Upload Hanya di Preview
 
@@ -427,14 +435,14 @@ Klik tiket membuka halaman detail yang menampilkan:
 
 ### Apa yang Bisa dan Tidak Bisa Dilakukan Reporter
 
-| Aksi | Bisa? |
-|---|---|
-| Lihat isi tiket | ✅ |
-| Lihat status terkini | ✅ (dari Trello) |
-| Buka link Trello card | ✅ |
-| Edit tiket setelah dikirim | ❌ |
-| Hapus tiket | ❌ |
-| Tambah komentar | ❌ (versi 1) |
+| Aksi                       | Bisa?            |
+| -------------------------- | ---------------- |
+| Lihat isi tiket            | ✅               |
+| Lihat status terkini       | ✅ (dari Trello) |
+| Buka link Trello card      | ✅               |
+| Edit tiket setelah dikirim | ❌               |
+| Hapus tiket                | ❌               |
+| Tambah komentar            | ❌ (versi 1)     |
 
 ---
 
@@ -445,6 +453,7 @@ Admin panel sengaja dibuat **sesimpel mungkin**. Satu-satunya fungsi admin di Mi
 ### Halaman Admin — Whitelist Email
 
 Menampilkan:
+
 - Tabel daftar email yang sudah diizinkan (email, nama, tanggal ditambahkan)
 - Form untuk menambahkan email baru
 - Tombol hapus per baris
@@ -463,16 +472,16 @@ Menampilkan:
 
 Berikut adalah hal-hal yang **sengaja tidak dimasukkan** ke versi pertama untuk menjaga produk tetap fokus dan bisa diluncurkan lebih cepat.
 
-| Fitur | Alasan Ditunda |
-|---|---|
-| Notifikasi email/Slack saat tiket masuk | Developer bisa set notifikasi langsung dari Trello |
-| Komentar di tiket setelah dikirim | Kompleksitas sync dua arah tidak sebanding dengan value-nya di v1 |
-| Deteksi duplikat tiket | Perlu matching yang matang agar tidak salah deteksi |
-| Multi-board Trello | Perlu desain routing yang lebih kompleks |
-| Dashboard admin untuk lihat semua tiket | Developer sudah punya Trello untuk ini |
-| Rekam layar (screen recording) | Hanya gambar dan video yang sudah direkam yang bisa diupload |
-| Multi-bahasa | Cukup Bahasa Indonesia untuk kebutuhan internal |
-| Registrasi mandiri | Sengaja dibatasi agar akses terkontrol |
+| Fitur                                   | Alasan Ditunda                                                    |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| Notifikasi email/Slack saat tiket masuk | Developer bisa set notifikasi langsung dari Trello                |
+| Komentar di tiket setelah dikirim       | Kompleksitas sync dua arah tidak sebanding dengan value-nya di v1 |
+| Deteksi duplikat tiket                  | Perlu matching yang matang agar tidak salah deteksi               |
+| Multi-board Trello                      | Perlu desain routing yang lebih kompleks                          |
+| Dashboard admin untuk lihat semua tiket | Developer sudah punya Trello untuk ini                            |
+| Rekam layar (screen recording)          | Hanya gambar dan video yang sudah direkam yang bisa diupload      |
+| Multi-bahasa                            | Cukup Bahasa Indonesia untuk kebutuhan internal                   |
+| Registrasi mandiri                      | Sengaja dibatasi agar akses terkontrol                            |
 
 ---
 
@@ -480,12 +489,12 @@ Berikut adalah hal-hal yang **sengaja tidak dimasukkan** ke versi pertama untuk 
 
 Produk dianggap berhasil jika setelah **1 bulan** digunakan, memenuhi kondisi berikut:
 
-| Metrik | Target |
-|---|---|
-| Tiket yang langsung bisa dikerjakan tanpa tanya-tanya lagi ke reporter | > 80% dari total tiket masuk |
-| Waktu rata-rata reporter mengisi laporan | < 5 menit |
-| Adopsi oleh tim non-developer yang relevan | > 70% sudah pernah menggunakan |
-| Kepuasan reporter (survei singkat setelah kirim tiket) | Rating ≥ 4 dari 5 |
+| Metrik                                                                 | Target                         |
+| ---------------------------------------------------------------------- | ------------------------------ |
+| Tiket yang langsung bisa dikerjakan tanpa tanya-tanya lagi ke reporter | > 80% dari total tiket masuk   |
+| Waktu rata-rata reporter mengisi laporan                               | < 5 menit                      |
+| Adopsi oleh tim non-developer yang relevan                             | > 70% sudah pernah menggunakan |
+| Kepuasan reporter (survei singkat setelah kirim tiket)                 | Rating ≥ 4 dari 5              |
 
 ---
 
@@ -502,4 +511,4 @@ Hal-hal berikut perlu dijawab bersama tim sebelum mulai pembangunan:
 
 ---
 
-*Mini Issues Product Spec v1.0 — Dokumen ini adalah rencana produk, bukan dokumen teknis. Keputusan stack, database, dan infrastruktur ditentukan sepenuhnya oleh developer.*
+_Mini Issues Product Spec v1.0 — Dokumen ini adalah rencana produk, bukan dokumen teknis. Keputusan stack, database, dan infrastruktur ditentukan sepenuhnya oleh developer._

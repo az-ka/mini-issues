@@ -178,7 +178,10 @@ export const listAll = query({
 			.first();
 
 		const LIMIT = 200;
-		const fetched = await ctx.db.query('reports').order('desc').take(LIMIT + 1);
+		const fetched = await ctx.db
+			.query('reports')
+			.order('desc')
+			.take(LIMIT + 1);
 		const reachedLimit = fetched.length > LIMIT;
 		const page = fetched.slice(0, LIMIT);
 

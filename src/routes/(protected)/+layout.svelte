@@ -18,24 +18,19 @@
 
 	// Query whitelist+admin status in one call (isCurrentUserAllowed covers both)
 	const accessCheck = $derived(
-		userEmail !== null
-			? useQuery(api.whitelist.isCurrentUserAllowed, {})
-			: null
+		userEmail !== null ? useQuery(api.whitelist.isCurrentUserAllowed, {}) : null
 	);
 
 	const isAllowed = $derived(accessCheck?.data === true);
 
-	const isChecking = $derived(
-		ctx.user === undefined ||
-		accessCheck?.isLoading === true
-	);
+	const isChecking = $derived(ctx.user === undefined || accessCheck?.isLoading === true);
 
 	const isDenied = $derived(
 		!isChecking &&
-		ctx.user !== null &&
-		ctx.user !== undefined &&
-		!isAllowed &&
-		accessCheck?.isLoading === false
+			ctx.user !== null &&
+			ctx.user !== undefined &&
+			!isAllowed &&
+			accessCheck?.isLoading === false
 	);
 
 	$effect(() => {
@@ -52,7 +47,9 @@
 	<!-- Checking access — brief loading state -->
 	<div class="flex min-h-dvh items-center justify-center">
 		<div class="flex flex-col items-center gap-3">
-			<div class="flex h-10 w-10 items-center justify-center rounded-xl border border-accent/20 bg-accent/10">
+			<div
+				class="flex h-10 w-10 items-center justify-center rounded-xl border border-accent/20 bg-accent/10"
+			>
 				<svg
 					class="animate-spin text-accent"
 					xmlns="http://www.w3.org/2000/svg"
@@ -75,7 +72,9 @@
 	<!-- Briefly shown before redirect/signout -->
 	<div class="flex min-h-dvh items-center justify-center p-4">
 		<div class="w-full max-w-sm text-center">
-			<div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-danger/20 bg-danger/10">
+			<div
+				class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-danger/20 bg-danger/10"
+			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					width="22"

@@ -42,9 +42,7 @@
 	);
 
 	const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-	const isFormValid = $derived(
-		newName.trim().length > 0 && EMAIL_REGEX.test(newEmail.trim())
-	);
+	const isFormValid = $derived(newName.trim().length > 0 && EMAIL_REGEX.test(newEmail.trim()));
 
 	function formatDate(timestamp: number): string {
 		return new Date(timestamp).toLocaleDateString('id-ID', {
@@ -327,7 +325,9 @@
 
 	<!-- Delete error -->
 	{#if deleteError}
-		<div class="mb-4 flex items-start gap-2.5 rounded-xl border border-danger/20 bg-danger/5 px-4 py-3">
+		<div
+			class="mb-4 flex items-start gap-2.5 rounded-xl border border-danger/20 bg-danger/5 px-4 py-3"
+		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
 				width="14"
@@ -351,7 +351,17 @@
 				class="shrink-0 text-danger/60 hover:text-danger"
 				aria-label="Tutup"
 			>
-				<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="13"
+					height="13"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
 					<line x1="18" y1="6" x2="6" y2="18" />
 					<line x1="6" y1="6" x2="18" y2="18" />
 				</svg>

@@ -25,7 +25,6 @@
 		await clerk.signOut();
 		goto('/');
 	}
-
 </script>
 
 <div class="mx-auto min-h-dvh max-w-2xl px-4 py-8">
@@ -59,7 +58,7 @@
 				<button
 					type="button"
 					onclick={() => (dropdownOpen = !dropdownOpen)}
-					class="flex items-center gap-2.5 rounded-lg p-1 transition-colors hover:bg-surface-2 cursor-pointer"
+					class="flex cursor-pointer items-center gap-2.5 rounded-lg p-1 transition-colors hover:bg-surface-2"
 				>
 					<span class="text-sm text-muted">Halo, {displayName}</span>
 					{#if avatarUrl}
@@ -111,7 +110,7 @@
 						<button
 							type="button"
 							onclick={handleSignOut}
-							class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-danger transition-colors hover:bg-danger/10 cursor-pointer"
+							class="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-danger transition-colors hover:bg-danger/10"
 						>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -143,22 +142,22 @@
 			AI akan membantu kamu menyusun laporan yang lengkap dalam beberapa menit.
 		</p>
 		<Button size="lg" href="/report/chat">
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					width="16"
-					height="16"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-				>
-					<line x1="12" y1="5" x2="12" y2="19" />
-					<line x1="5" y1="12" x2="19" y2="12" />
-				</svg>
-				Buat Laporan Baru
-			</Button>
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="16"
+				height="16"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			>
+				<line x1="12" y1="5" x2="12" y2="19" />
+				<line x1="5" y1="12" x2="19" y2="12" />
+			</svg>
+			Buat Laporan Baru
+		</Button>
 	</div>
 
 	<!-- Recent tickets -->

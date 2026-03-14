@@ -8,15 +8,15 @@ const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 // Fallback chain: best quality first, high-RPM models as safety net
 const MODEL_CHAIN = [
-  'gemini-2.5-flash',       // RPD 20, RPM 5
-  'gemini-2.5-flash-lite',  // RPD 20, RPM 10
+	'gemini-2.5-flash', // RPD 20, RPM 5
+	'gemini-2.5-flash-lite', // RPD 20, RPM 10
 
-  'gemini-3.1-flash-lite',  // RPD 500, RPM 15, TPM 250K
+	'gemini-3.1-flash-lite', // RPD 500, RPM 15, TPM 250K
 
-  'gemma-3-27b-it',
-  'gemma-3-12b-it',
-  'gemma-3-4b-it',
-  'gemma-3-1b-it',
+	'gemma-3-27b-it',
+	'gemma-3-12b-it',
+	'gemma-3-4b-it',
+	'gemma-3-1b-it'
 ] as const;
 
 export interface ChatMessage {

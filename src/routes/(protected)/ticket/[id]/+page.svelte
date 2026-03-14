@@ -13,14 +13,17 @@
 
 	const reportId = $derived(page.params.id as Id<'reports'>);
 	const reportQuery = useQuery(api.reports.getById, () => ({ id: reportId }));
-	const reporterQuery = useQuery(
-		api.users.getById,
-		() => reportQuery.data ? { id: reportQuery.data.reporterId } : 'skip'
+	const reporterQuery = useQuery(api.users.getById, () =>
+		reportQuery.data ? { id: reportQuery.data.reporterId } : 'skip'
 	);
 
 	function parseAttachments(json: string | undefined): { name: string; url: string }[] {
 		if (!json) return [];
-		try { return JSON.parse(json); } catch { return []; }
+		try {
+			return JSON.parse(json);
+		} catch {
+			return [];
+		}
 	}
 
 	const report = $derived(reportQuery.data);
@@ -51,123 +54,93 @@
 			{/each}
 		</div>
 	{:else if report}
-
-	<!-- Alert: Trello card deleted (404) -->
-	{#if trelloDeleted}
-		<div
-			class="mb-4 flex items-start gap-2.5 rounded-xl border border-danger/30 bg-danger/10 px-4 py-3"
-		>
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				width="14"
-				height="14"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="2"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				class="mt-0.5 shrink-0 text-danger"
+		<!-- Alert: Trello card deleted (404) -->
+		{#if trelloDeleted}
+			<div
+				class="mb-4 flex items-start gap-2.5 rounded-xl border border-danger/30 bg-danger/10 px-4 py-3"
 			>
-				<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-				<line x1="12" y1="9" x2="12" y2="13" />
-				<line x1="12" y1="17" x2="12.01" y2="17" />
-			</svg>
-			<p class="text-xs leading-relaxed text-danger">
-				Card Trello untuk tiket ini telah dihapus. Data tiket tetap tersimpan di sini.
-			</p>
-		</div>
-	{:else if trelloArchived}
-		<!-- Alert: Trello card archived -->
-		<div
-			class="mb-4 flex items-start gap-2.5 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3"
-		>
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				width="14"
-				height="14"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="2"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				class="mt-0.5 shrink-0 text-warning"
-			>
-				<path d="M21 8v13H3V8" />
-				<path d="M1 3h22v5H1z" />
-				<line x1="10" y1="12" x2="14" y2="12" />
-			</svg>
-			<p class="text-xs leading-relaxed text-warning">
-				Card Trello untuk tiket ini telah diarsipkan. Data tiket tetap tersimpan di sini.
-			</p>
-		</div>
-	{/if}
-
-	<!-- Header card -->
-	<div class="mb-5 rounded-2xl border border-border bg-surface p-5">
-		<!-- ID + badges -->
-		<div class="mb-3 flex flex-wrap items-center gap-2">
-			<span class="font-mono text-xs font-semibold text-accent">{ticketId}</span>
-			<span class="text-muted">·</span>
-			<Badge color={TYPE_COLOR[report.type as TicketType]}>{TYPE_LABEL[report.type as TicketType]}</Badge>
-			{#if report.priority}
-				<Badge color={PRIORITY_COLOR[report.priority as Priority]}>{PRIORITY_LABEL[report.priority as Priority]}</Badge>
-			{/if}
-
-			<!-- Status badge (position-based coloring) -->
-			<TicketStatusBadge
-				trelloCardId={report.trelloCardId}
-				trelloCardFound={report.trelloCardFound}
-				trelloArchived={report.trelloArchived}
-				trelloStatus={report.trelloStatus}
-				trelloListIndex={report.trelloListIndex}
-				trelloTotalLists={report.trelloTotalLists}
-			/>
-		</div>
-
-		<!-- Title -->
-		<h2 class="mb-4 text-base font-semibold leading-snug text-foreground">
-			{report.title}
-		</h2>
-
-		<!-- Meta -->
-		<div class="flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-muted">
-			<div class="flex items-center gap-1.5">
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
-					width="12"
-					height="12"
+					width="14"
+					height="14"
 					viewBox="0 0 24 24"
 					fill="none"
 					stroke="currentColor"
 					stroke-width="2"
 					stroke-linecap="round"
 					stroke-linejoin="round"
+					class="mt-0.5 shrink-0 text-danger"
 				>
-					<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-					<circle cx="12" cy="7" r="4" />
+					<path
+						d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+					/>
+					<line x1="12" y1="9" x2="12" y2="13" />
+					<line x1="12" y1="17" x2="12.01" y2="17" />
 				</svg>
-					{reporterName}
+				<p class="text-xs leading-relaxed text-danger">
+					Card Trello untuk tiket ini telah dihapus. Data tiket tetap tersimpan di sini.
+				</p>
 			</div>
-			<div class="flex items-center gap-1.5">
+		{:else if trelloArchived}
+			<!-- Alert: Trello card archived -->
+			<div
+				class="mb-4 flex items-start gap-2.5 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3"
+			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
-					width="12"
-					height="12"
+					width="14"
+					height="14"
 					viewBox="0 0 24 24"
 					fill="none"
 					stroke="currentColor"
 					stroke-width="2"
 					stroke-linecap="round"
 					stroke-linejoin="round"
+					class="mt-0.5 shrink-0 text-warning"
 				>
-					<circle cx="12" cy="12" r="10" />
-					<polyline points="12 6 12 12 16 14" />
+					<path d="M21 8v13H3V8" />
+					<path d="M1 3h22v5H1z" />
+					<line x1="10" y1="12" x2="14" y2="12" />
 				</svg>
-				{reportDate}
+				<p class="text-xs leading-relaxed text-warning">
+					Card Trello untuk tiket ini telah diarsipkan. Data tiket tetap tersimpan di sini.
+				</p>
 			</div>
-			{#if report.module}
+		{/if}
+
+		<!-- Header card -->
+		<div class="mb-5 rounded-2xl border border-border bg-surface p-5">
+			<!-- ID + badges -->
+			<div class="mb-3 flex flex-wrap items-center gap-2">
+				<span class="font-mono text-xs font-semibold text-accent">{ticketId}</span>
+				<span class="text-muted">·</span>
+				<Badge color={TYPE_COLOR[report.type as TicketType]}
+					>{TYPE_LABEL[report.type as TicketType]}</Badge
+				>
+				{#if report.priority}
+					<Badge color={PRIORITY_COLOR[report.priority as Priority]}
+						>{PRIORITY_LABEL[report.priority as Priority]}</Badge
+					>
+				{/if}
+
+				<!-- Status badge (position-based coloring) -->
+				<TicketStatusBadge
+					trelloCardId={report.trelloCardId}
+					trelloCardFound={report.trelloCardFound}
+					trelloArchived={report.trelloArchived}
+					trelloStatus={report.trelloStatus}
+					trelloListIndex={report.trelloListIndex}
+					trelloTotalLists={report.trelloTotalLists}
+				/>
+			</div>
+
+			<!-- Title -->
+			<h2 class="mb-4 text-base leading-snug font-semibold text-foreground">
+				{report.title}
+			</h2>
+
+			<!-- Meta -->
+			<div class="flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-muted">
 				<div class="flex items-center gap-1.5">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -180,208 +153,247 @@
 						stroke-linecap="round"
 						stroke-linejoin="round"
 					>
-						<rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-						<line x1="3" y1="9" x2="21" y2="9" />
-						<line x1="9" y1="21" x2="9" y2="3" />
+						<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+						<circle cx="12" cy="7" r="4" />
 					</svg>
-					{report.module}
+					{reporterName}
 				</div>
-			{/if}
+				<div class="flex items-center gap-1.5">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="12"
+						height="12"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					>
+						<circle cx="12" cy="12" r="10" />
+						<polyline points="12 6 12 12 16 14" />
+					</svg>
+					{reportDate}
+				</div>
+				{#if report.module}
+					<div class="flex items-center gap-1.5">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="12"
+							height="12"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						>
+							<rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+							<line x1="3" y1="9" x2="21" y2="9" />
+							<line x1="9" y1="21" x2="9" y2="3" />
+						</svg>
+						{report.module}
+					</div>
+				{/if}
+			</div>
 		</div>
-	</div>
 
-	<!-- Trello link (hidden if card deleted or not yet sent) -->
-	{#if report.trelloCardUrl && !trelloDeleted}
-		<a
-			href={report.trelloCardUrl}
-			target="_blank"
-			rel="noopener noreferrer"
-			class="mb-5 flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3 transition-all hover:border-accent/30 hover:bg-surface-2"
-		>
-			<div class="flex items-center gap-2.5 text-sm text-foreground">
+		<!-- Trello link (hidden if card deleted or not yet sent) -->
+		{#if report.trelloCardUrl && !trelloDeleted}
+			<a
+				href={report.trelloCardUrl}
+				target="_blank"
+				rel="noopener noreferrer"
+				class="mb-5 flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3 transition-all hover:border-accent/30 hover:bg-surface-2"
+			>
+				<div class="flex items-center gap-2.5 text-sm text-foreground">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="15"
+						height="15"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="text-accent"
+					>
+						<path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+						<polyline points="15 3 21 3 21 9" />
+						<line x1="10" y1="14" x2="21" y2="3" />
+					</svg>
+					Buka card di Trello
+				</div>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
-					width="15"
-					height="15"
+					width="14"
+					height="14"
 					viewBox="0 0 24 24"
 					fill="none"
 					stroke="currentColor"
 					stroke-width="2"
 					stroke-linecap="round"
 					stroke-linejoin="round"
-					class="text-accent"
+					class="text-muted"
 				>
-					<path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
-					<polyline points="15 3 21 3 21 9" />
-					<line x1="10" y1="14" x2="21" y2="3" />
+					<path d="M9 18l6-6-6-6" />
 				</svg>
-				Buka card di Trello
-			</div>
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				width="14"
-				height="14"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="2"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				class="text-muted"
-			>
-				<path d="M9 18l6-6-6-6" />
-			</svg>
-		</a>
-	{/if}
-
-	<!-- Fields -->
-	<div class="flex flex-col gap-4">
-		<!-- Deskripsi -->
-		{#if report.description}
-			<div class="rounded-xl border border-border bg-surface p-4">
-				<p class="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">Deskripsi</p>
-				<p class="text-sm leading-relaxed text-foreground">{report.description}</p>
-			</div>
+			</a>
 		{/if}
 
-		<!-- Bug fields -->
-		{#if isBug && (report.stepsToReproduce || report.expectedResult || report.actualResult || report.frequency)}
-			<div class="rounded-xl border border-border bg-surface p-4">
-				<div class="mb-3 flex items-center gap-2">
-					<Badge color="red">Bug</Badge>
-					<span class="text-xs text-muted">Detail teknis</span>
+		<!-- Fields -->
+		<div class="flex flex-col gap-4">
+			<!-- Deskripsi -->
+			{#if report.description}
+				<div class="rounded-xl border border-border bg-surface p-4">
+					<p class="mb-2 text-xs font-semibold tracking-wider text-muted uppercase">Deskripsi</p>
+					<p class="text-sm leading-relaxed text-foreground">{report.description}</p>
 				</div>
+			{/if}
 
-				<div class="flex flex-col gap-4">
-					{#if report.stepsToReproduce}
-						<div>
-							<p class="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
-								Steps to Reproduce
-							</p>
-							<pre class="whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground"
-								>{report.stepsToReproduce}</pre>
-						</div>
-					{/if}
+			<!-- Bug fields -->
+			{#if isBug && (report.stepsToReproduce || report.expectedResult || report.actualResult || report.frequency)}
+				<div class="rounded-xl border border-border bg-surface p-4">
+					<div class="mb-3 flex items-center gap-2">
+						<Badge color="red">Bug</Badge>
+						<span class="text-xs text-muted">Detail teknis</span>
+					</div>
 
-					{#if report.expectedResult || report.actualResult}
-						<div class="h-px bg-border"></div>
+					<div class="flex flex-col gap-4">
+						{#if report.stepsToReproduce}
+							<div>
+								<p class="mb-2 text-xs font-semibold tracking-wider text-muted uppercase">
+									Steps to Reproduce
+								</p>
+								<pre
+									class="font-sans text-sm leading-relaxed whitespace-pre-wrap text-foreground">{report.stepsToReproduce}</pre>
+							</div>
+						{/if}
 
-						<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-							{#if report.expectedResult}
-								<div>
-									<p class="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
-										Expected Behavior
-									</p>
-									<p class="text-sm leading-relaxed text-foreground">{report.expectedResult}</p>
-								</div>
-							{/if}
-							{#if report.actualResult}
-								<div>
-									<p class="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
-										Actual Behavior
-									</p>
-									<p class="text-sm leading-relaxed text-danger/90">{report.actualResult}</p>
-								</div>
-							{/if}
-						</div>
-					{/if}
+						{#if report.expectedResult || report.actualResult}
+							<div class="h-px bg-border"></div>
 
-					{#if report.frequency}
-						<div class="h-px bg-border"></div>
-						<div>
-							<p class="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">Frekuensi</p>
-							<p class="text-sm text-foreground">{report.frequency}</p>
-						</div>
-					{/if}
+							<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+								{#if report.expectedResult}
+									<div>
+										<p class="mb-2 text-xs font-semibold tracking-wider text-muted uppercase">
+											Expected Behavior
+										</p>
+										<p class="text-sm leading-relaxed text-foreground">{report.expectedResult}</p>
+									</div>
+								{/if}
+								{#if report.actualResult}
+									<div>
+										<p class="mb-2 text-xs font-semibold tracking-wider text-muted uppercase">
+											Actual Behavior
+										</p>
+										<p class="text-sm leading-relaxed text-danger/90">{report.actualResult}</p>
+									</div>
+								{/if}
+							</div>
+						{/if}
+
+						{#if report.frequency}
+							<div class="h-px bg-border"></div>
+							<div>
+								<p class="mb-2 text-xs font-semibold tracking-wider text-muted uppercase">
+									Frekuensi
+								</p>
+								<p class="text-sm text-foreground">{report.frequency}</p>
+							</div>
+						{/if}
+					</div>
 				</div>
-			</div>
-		{/if}
+			{/if}
 
-		<!-- Dampak bisnis -->
-		{#if report.businessImpact}
-			<div class="rounded-xl border border-border bg-surface p-4">
-				<p class="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">Dampak Bisnis</p>
-				<p class="text-sm leading-relaxed text-foreground">{report.businessImpact}</p>
-			</div>
-		{/if}
+			<!-- Dampak bisnis -->
+			{#if report.businessImpact}
+				<div class="rounded-xl border border-border bg-surface p-4">
+					<p class="mb-2 text-xs font-semibold tracking-wider text-muted uppercase">
+						Dampak Bisnis
+					</p>
+					<p class="text-sm leading-relaxed text-foreground">{report.businessImpact}</p>
+				</div>
+			{/if}
 
-		<!-- Attachments from Trello -->
-		{#if savedAttachments.length > 0}
-			<div class="rounded-xl border border-border bg-surface p-4">
-				<p class="mb-3 text-xs font-semibold uppercase tracking-wider text-muted">
-					Attachment ({savedAttachments.length})
+			<!-- Attachments from Trello -->
+			{#if savedAttachments.length > 0}
+				<div class="rounded-xl border border-border bg-surface p-4">
+					<p class="mb-3 text-xs font-semibold tracking-wider text-muted uppercase">
+						Attachment ({savedAttachments.length})
+					</p>
+					<div class="flex flex-col gap-2">
+						{#each savedAttachments as file}
+							<a
+								href={file.url}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="flex items-center gap-3 rounded-lg border border-border bg-surface-2 px-3 py-2 transition-colors hover:border-accent/30 hover:bg-surface"
+							>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="14"
+									height="14"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									class="shrink-0 text-muted"
+								>
+									<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+									<polyline points="14 2 14 8 20 8" />
+								</svg>
+								<span class="min-w-0 flex-1 truncate text-xs text-foreground">{file.name}</span>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="12"
+									height="12"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									class="shrink-0 text-muted"
+								>
+									<path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+									<polyline points="15 3 21 3 21 9" />
+									<line x1="10" y1="14" x2="21" y2="3" />
+								</svg>
+							</a>
+						{/each}
+					</div>
+				</div>
+			{/if}
+
+			<!-- Read-only notice -->
+			<div class="flex items-start gap-2.5 rounded-xl border border-border bg-surface px-4 py-3">
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="14"
+					height="14"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					class="mt-0.5 shrink-0 text-muted"
+				>
+					<rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+					<path d="M7 11V7a5 5 0 0110 0v4" />
+				</svg>
+				<p class="text-xs leading-relaxed text-muted">
+					Tiket ini sudah dikirim dan tidak dapat diedit. Jika ada perubahan, silakan hubungi
+					developer langsung melalui Whatsapp.
 				</p>
-				<div class="flex flex-col gap-2">
-					{#each savedAttachments as file}
-						<a
-							href={file.url}
-							target="_blank"
-							rel="noopener noreferrer"
-							class="flex items-center gap-3 rounded-lg border border-border bg-surface-2 px-3 py-2 transition-colors hover:border-accent/30 hover:bg-surface"
-						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="14"
-								height="14"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								class="shrink-0 text-muted"
-							>
-								<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-								<polyline points="14 2 14 8 20 8" />
-							</svg>
-							<span class="min-w-0 flex-1 truncate text-xs text-foreground">{file.name}</span>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="12"
-								height="12"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								class="shrink-0 text-muted"
-							>
-								<path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
-								<polyline points="15 3 21 3 21 9" />
-								<line x1="10" y1="14" x2="21" y2="3" />
-							</svg>
-						</a>
-					{/each}
-				</div>
 			</div>
-		{/if}
-
-		<!-- Read-only notice -->
-		<div class="flex items-start gap-2.5 rounded-xl border border-border bg-surface px-4 py-3">
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				width="14"
-				height="14"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="2"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				class="mt-0.5 shrink-0 text-muted"
-			>
-				<rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-				<path d="M7 11V7a5 5 0 0110 0v4" />
-			</svg>
-			<p class="text-xs leading-relaxed text-muted">
-				Tiket ini sudah dikirim dan tidak dapat diedit. Jika ada perubahan, silakan hubungi developer
-				langsung melalui Whatsapp.
-			</p>
 		</div>
-	</div>
 
-	<div class="pb-8"></div>
+		<div class="pb-8"></div>
 	{:else}
 		<NotFound
 			title="Tiket tidak ditemukan"

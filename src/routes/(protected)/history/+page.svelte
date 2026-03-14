@@ -56,7 +56,7 @@
 			stroke-width="2"
 			stroke-linecap="round"
 			stroke-linejoin="round"
-			class="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted"
+			class="absolute top-1/2 left-3.5 -translate-y-1/2 text-muted"
 		>
 			<circle cx="11" cy="11" r="8" />
 			<line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -65,7 +65,7 @@
 			type="text"
 			bind:value={search}
 			placeholder="Cari laporan berdasarkan judul..."
-			class="w-full rounded-lg border border-border bg-surface-2 py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted/60 transition-colors focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/15"
+			class="w-full rounded-lg border border-border bg-surface-2 py-2.5 pr-4 pl-10 text-sm text-foreground transition-colors placeholder:text-muted/60 focus:border-accent/50 focus:ring-2 focus:ring-accent/15 focus:outline-none"
 		/>
 	</div>
 
@@ -75,7 +75,8 @@
 			<button
 				type="button"
 				onclick={() => (filterType = opt.value)}
-				class="rounded-full border px-3 py-1 text-xs font-medium transition-colors cursor-pointer {filterType === opt.value
+				class="cursor-pointer rounded-full border px-3 py-1 text-xs font-medium transition-colors {filterType ===
+				opt.value
 					? 'border-accent/40 bg-accent/10 text-accent'
 					: 'border-border bg-surface text-muted hover:border-accent/20 hover:text-foreground'}"
 			>
@@ -89,7 +90,7 @@
 		<button
 			type="button"
 			onclick={() => (showMine = !showMine)}
-			class="rounded-full border px-3 py-1 text-xs font-medium transition-colors cursor-pointer {showMine
+			class="cursor-pointer rounded-full border px-3 py-1 text-xs font-medium transition-colors {showMine
 				? 'border-accent/40 bg-accent/10 text-accent'
 				: 'border-border bg-surface text-muted hover:border-accent/20 hover:text-foreground'}"
 		>
@@ -144,10 +145,7 @@
 		</div>
 
 		{#if reachedLimit}
-			<p class="mt-4 text-center text-xs text-muted/50">
-				Menampilkan 200 laporan terbaru
-			</p>
+			<p class="mt-4 text-center text-xs text-muted/50">Menampilkan 200 laporan terbaru</p>
 		{/if}
 	{/if}
 </div>
-
