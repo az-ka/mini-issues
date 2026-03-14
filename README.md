@@ -17,6 +17,7 @@ Internal ticketing tool for non-technical teams. Describe a bug or feature reque
 - [Clerk](https://clerk.com) — Authentication (Google OAuth)
 - [Tailwind CSS v4](https://tailwindcss.com) — Styling
 - [Google Gemini](https://ai.google.dev) — AI chat for ticket structuring
+- [Groq](https://groq.com) — AI fallback when Gemini hits rate limits (optional)
 - [Trello API](https://developer.atlassian.com/cloud/trello/) — Card creation
 
 ## Getting Started
@@ -66,3 +67,15 @@ Git hooks (via [Lefthook](https://github.com/evilmartians/lefthook)):
 
 - **pre-commit** — auto-formats staged files with Prettier
 - **pre-push** — runs full lint check
+
+## Deployment
+
+### Vercel (Recommended)
+
+1. Connect your GitHub repo to [Vercel](https://vercel.com)
+2. Set **Build Command** to:
+   ```sh
+   npx convex deploy --cmd 'vite build'
+   ```
+3. Add all environment variables from `.env.example` in the Vercel dashboard, including `CONVEX_DEPLOY_KEY` (from Convex Dashboard → Settings → Deploy Key)
+4. Push to `main` — Vercel will auto-deploy both Convex functions and the SvelteKit app
