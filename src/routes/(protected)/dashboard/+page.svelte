@@ -1,11 +1,14 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { useQuery } from 'convex-svelte';
 	import { useClerkContext } from 'svelte-clerk/client';
 	import { getInitials } from '$lib/utils';
+	import { api } from '../../../convex/_generated/api';
 	import Button from '$lib/components/ui/Button.svelte';
 	import TicketCard from '$lib/components/TicketCard.svelte';
 
 	const ctx = useClerkContext();
+	const ticketsQuery = useQuery(api.reports.listRecent, () => ({}));
 
 	const user = $derived(ctx.user);
 	const displayName = $derived(user?.firstName ?? user?.fullName?.split(' ')[0] ?? 'Kamu');
@@ -22,32 +25,18 @@
 		goto('/');
 	}
 
-	const mockTickets = [
-		{
-			id: '1',
-			title: 'Tombol login tidak merespon setelah salah password 3 kali',
-			type: 'bug' as const,
-			priority: 'high' as const,
-			status: 'Sedang Dikerjakan',
-			date: '2 jam lalu'
-		},
-		{
-			id: '2',
-			title: 'Tambahkan fitur export laporan ke PDF',
-			type: 'feature' as const,
-			priority: 'medium' as const,
-			status: 'Menunggu Review',
-			date: '1 hari lalu'
-		},
-		{
-			id: '3',
-			title: 'Tampilan tabel di halaman laporan tidak rapi di mobile',
-			type: 'improvement' as const,
-			priority: 'low' as const,
-			status: 'Menunggu Review',
-			date: '3 hari lalu'
-		}
-	];
+	function relativeDate(epochMs: number): string {
+		const diff = Date.now() - epochMs;
+		const mins = Math.floor(diff / 60_000);
+		if (mins < 1) return 'Baru saja';
+		if (mins < 60) return `${mins} menit lalu`;
+		const hours = Math.floor(mins / 60);
+		if (hours < 24) return `${hours} jam lalu`;
+		const days = Math.floor(hours / 24);
+		if (days < 30) return `${days} hari lalu`;
+		const months = Math.floor(days / 30);
+		return `${months} bulan lalu`;
+	}
 </script>
 
 <div class="mx-auto min-h-dvh max-w-2xl px-4 py-8">
@@ -164,8 +153,7 @@
 		<p class="mb-4 text-sm text-muted">
 			AI akan membantu kamu menyusun laporan yang lengkap dalam beberapa menit.
 		</p>
-		<a href="/report/chat">
-			<Button size="lg">
+		<Button size="lg" href="/report/chat">
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					width="16"
@@ -182,7 +170,6 @@
 				</svg>
 				Buat Laporan Baru
 			</Button>
-		</a>
 	</div>
 
 	<!-- Recent tickets -->
@@ -194,22 +181,34 @@
 			</a>
 		</div>
 
-		{#if mockTickets.length === 0}
-			<div class="rounded-xl border border-border bg-surface py-12 text-center">
-				<p class="text-sm text-muted">Belum ada tiket. Buat laporan pertamamu!</p>
-			</div>
-		{:else}
+		{#if ticketsQuery.isLoading}
 			<div class="flex flex-col gap-2">
-				{#each mockTickets as ticket (ticket.id)}
+				{#each [1, 2, 3] as _}
+					<div class="h-16 animate-pulse rounded-xl bg-surface-2"></div>
+				{/each}
+			</div>
+		{:else if ticketsQuery.data && ticketsQuery.data.length > 0}
+			<div class="flex flex-col gap-2">
+				{#each ticketsQuery.data as ticket (ticket._id)}
 					<TicketCard
-						id={ticket.id}
+						id={ticket._id}
 						title={ticket.title}
-						type={ticket.type}
-						priority={ticket.priority}
-						status={ticket.status}
-						date={ticket.date}
+						type={ticket.type as 'bug' | 'feature' | 'improvement'}
+						priority={(ticket.priority ?? 'low') as 'high' | 'medium' | 'low'}
+						date={relativeDate(ticket.createdAt)}
+						reporterName={ticket.reporterName}
+						trelloCardId={ticket.trelloCardId}
+						trelloCardFound={ticket.trelloCardFound}
+						trelloArchived={ticket.trelloArchived}
+						trelloStatus={ticket.trelloStatus}
+						trelloListIndex={ticket.trelloListIndex}
+						trelloTotalLists={ticket.trelloTotalLists}
 					/>
 				{/each}
+			</div>
+		{:else}
+			<div class="rounded-xl border border-border bg-surface py-12 text-center">
+				<p class="text-sm text-muted">Belum ada tiket. Buat laporan pertamamu!</p>
 			</div>
 		{/if}
 	</div>

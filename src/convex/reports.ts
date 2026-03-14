@@ -126,6 +126,45 @@ export const getById = query({
 	}
 });
 
+// List reports for the current user, newest first, max 10
+export const listByReporter = query({
+	args: {},
+	handler: async (ctx) => {
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) return [];
+
+		const user = await ctx.db
+			.query('users')
+			.withIndex('by_clerk_id', (q) => q.eq('clerkId', identity.subject))
+			.first();
+		if (!user) return [];
+
+		return await ctx.db
+			.query('reports')
+			.withIndex('by_reporter', (q) => q.eq('reporterId', user._id))
+			.order('desc')
+			.take(10);
+	}
+});
+
+// List 10 most recent reports from all users, with reporter name joined
+export const listRecent = query({
+	args: {},
+	handler: async (ctx) => {
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) return [];
+
+		const reports = await ctx.db.query('reports').order('desc').take(10);
+
+		return await Promise.all(
+			reports.map(async (report) => {
+				const reporter = await ctx.db.get(report.reporterId);
+				return { ...report, reporterName: reporter?.name ?? null };
+			})
+		);
+	}
+});
+
 // Update Trello sync status (called from +page.server.ts after fetching Trello API)
 export const updateTrelloStatus = mutation({
 	args: {

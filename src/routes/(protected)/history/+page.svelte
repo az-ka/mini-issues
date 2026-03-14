@@ -195,7 +195,6 @@
 					title={ticket.title}
 					type={ticket.type}
 					priority={ticket.priority}
-					status={ticket.status}
 					date={ticket.date}
 				/>
 			{/each}

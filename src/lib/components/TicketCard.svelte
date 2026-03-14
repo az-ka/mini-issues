@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Badge from './ui/Badge.svelte';
+	import TicketStatusBadge from './ui/TicketStatusBadge.svelte';
 
 	type TicketType = 'bug' | 'feature' | 'improvement';
 	type Priority = 'high' | 'medium' | 'low';
@@ -9,12 +10,32 @@
 		title: string;
 		type: TicketType;
 		priority: Priority;
-		status: string;
 		date: string;
 		href?: string;
+		reporterName?: string | null;
+		trelloCardId?: string;
+		trelloCardFound?: boolean;
+		trelloArchived?: boolean;
+		trelloStatus?: string;
+		trelloListIndex?: number;
+		trelloTotalLists?: number;
 	}
 
-	let { id, title, type, priority, status, date, href = `/ticket/${id}` }: Props = $props();
+	let {
+		id,
+		title,
+		type,
+		priority,
+		date,
+		href = `/ticket/${id}`,
+		reporterName,
+		trelloCardId,
+		trelloCardFound,
+		trelloArchived,
+		trelloStatus,
+		trelloListIndex,
+		trelloTotalLists
+	}: Props = $props();
 
 	const typeColor: Record<TicketType, 'red' | 'blue' | 'green'> = {
 		bug: 'red',
@@ -54,7 +75,18 @@
 		<div class="flex flex-wrap items-center gap-1.5">
 			<Badge color={typeColor[type]}>{typeLabel[type]}</Badge>
 			<Badge color={priorityColor[priority]}>{priorityLabel[priority]}</Badge>
-			<span class="text-xs text-muted">{status}</span>
+			<TicketStatusBadge
+				{trelloCardId}
+				{trelloCardFound}
+				{trelloArchived}
+				{trelloStatus}
+				{trelloListIndex}
+				{trelloTotalLists}
+			/>
+			{#if reporterName}
+				<span class="text-xs text-muted">·</span>
+				<span class="text-xs text-muted">{reporterName}</span>
+			{/if}
 			<span class="text-xs text-muted">·</span>
 			<span class="text-xs text-muted">{date}</span>
 		</div>
