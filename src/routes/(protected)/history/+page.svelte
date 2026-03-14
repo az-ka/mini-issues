@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { useQuery } from 'convex-svelte';
-	import { useClerkContext } from 'svelte-clerk/client';
 	import { api } from '../../../convex/_generated/api';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import TicketCard from '$lib/components/TicketCard.svelte';
@@ -8,10 +7,10 @@
 
 	type TicketType = 'bug' | 'feature' | 'improvement';
 
-	const ctx = useClerkContext();
+	const ticketsQuery = useQuery(api.reports.listAll, () => ({}));
 
-	let numItems = $state(15);
-	const ticketsQuery = useQuery(api.reports.listAll, () => ({ numItems }));
+	const allReports = $derived(ticketsQuery.data?.reports ?? []);
+	const reachedLimit = $derived(ticketsQuery.data?.reachedLimit ?? false);
 
 	let search = $state('');
 	let filterType = $state<TicketType | 'all'>('all');
@@ -37,18 +36,11 @@
 		return `${months} bulan lalu`;
 	}
 
-	const allLoaded = $derived(ticketsQuery.data?.reports ?? []);
-	const hasMore = $derived(ticketsQuery.data?.hasMore ?? false);
-
-	const currentUserName = $derived(
-		ctx.user?.fullName ?? ctx.user?.firstName ?? null
-	);
-
 	const filtered = $derived(
-		allLoaded.filter((t) => {
+		allReports.filter((t) => {
 			const matchSearch = t.title.toLowerCase().includes(search.toLowerCase());
 			const matchType = filterType === 'all' || t.type === filterType;
-			const matchMine = !showMine || t.reporterName === currentUserName;
+			const matchMine = !showMine || t.isOwn;
 			return matchSearch && matchType && matchMine;
 		})
 	);
@@ -119,7 +111,8 @@
 	</div>
 
 	<!-- List -->
-	{#if ticketsQuery.isLoading}		<div class="flex flex-col gap-2">
+	{#if ticketsQuery.isLoading}
+		<div class="flex flex-col gap-2">
 			{#each [1, 2, 3, 4, 5] as _}
 				<div class="h-16 animate-pulse rounded-xl bg-surface-2"></div>
 			{/each}
@@ -163,14 +156,10 @@
 			{/each}
 		</div>
 
-		{#if hasMore}
-			<button
-				type="button"
-				onclick={() => (numItems += 15)}
-				class="mt-4 w-full rounded-xl border border-border bg-surface py-3 text-sm text-muted transition-colors hover:border-accent/30 hover:text-accent cursor-pointer"
-			>
-				Muat lebih banyak
-			</button>
+		{#if reachedLimit}
+			<p class="mt-4 text-center text-xs text-muted/50">
+				Menampilkan 200 laporan terbaru
+			</p>
 		{/if}
 	{/if}
 </div>
