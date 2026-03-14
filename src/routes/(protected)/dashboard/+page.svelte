@@ -3,7 +3,7 @@
 	import { useQuery } from 'convex-svelte';
 	import { useClerkContext } from 'svelte-clerk/client';
 	import { getInitials, relativeDate } from '$lib/utils';
-	import { api } from '../../../convex/_generated/api';
+	import { api } from '$convex/api';
 	import Button from '$lib/components/ui/Button.svelte';
 	import TicketCard from '$lib/components/TicketCard.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';

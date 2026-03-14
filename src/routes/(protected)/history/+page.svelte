@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { useQuery } from 'convex-svelte';
-	import { api } from '../../../convex/_generated/api';
+	import { api } from '$convex/api';
 	import { relativeDate } from '$lib/utils';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import TicketCard from '$lib/components/TicketCard.svelte';

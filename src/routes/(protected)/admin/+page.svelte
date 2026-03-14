@@ -2,7 +2,7 @@
 	import { useClerkContext } from 'svelte-clerk/client';
 	import { useQuery, useConvexClient } from 'convex-svelte';
 	import { ConvexError } from 'convex/values';
-	import { api } from '../../../convex/_generated/api';
+	import { api } from '$convex/api';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { useQuery } from 'convex-svelte';
-	import { api } from '../../../../convex/_generated/api';
-	import type { Id } from '../../../../convex/_generated/dataModel';
+	import { api } from '$convex/api';
+	import type { Id } from '$convex/dataModel';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import TicketStatusBadge from '$lib/components/ui/TicketStatusBadge.svelte';

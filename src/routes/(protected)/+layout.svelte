@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { useClerkContext } from 'svelte-clerk/client';
 	import { useQuery } from 'convex-svelte';
-	import { api } from '../../convex/_generated/api';
+	import { api } from '$convex/api';
 
 	interface Props {
 		children: import('svelte').Snippet;

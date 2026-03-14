@@ -2,9 +2,9 @@ import { json, error } from '@sveltejs/kit';
 import { TRELLO_API_KEY, TRELLO_TOKEN, TRELLO_LIST_ID } from '$env/static/private';
 import { ConvexHttpClient } from 'convex/browser';
 import { PUBLIC_CONVEX_URL } from '$env/static/public';
-import { api } from '../../../convex/_generated/api';
+import { api } from '$convex/api';
 import type { RequestHandler } from './$types';
-import type { Id } from '../../../convex/_generated/dataModel';
+import type { Id } from '$convex/dataModel';
 
 const TRELLO_BASE = 'https://api.trello.com/1';
 

@@ -2,7 +2,7 @@
 	import { tick } from 'svelte';
 	import { useConvexClient, useQuery } from 'convex-svelte';
 	import { useClerkContext } from 'svelte-clerk/client';
-	import { api } from '../../../../convex/_generated/api';
+	import { api } from '$convex/api';
 	import { getInitials } from '$lib/utils';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import Button from '$lib/components/ui/Button.svelte';

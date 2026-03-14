@@ -3,7 +3,7 @@
 	import { setupConvex, useConvexClient } from 'convex-svelte';
 	import { PUBLIC_CONVEX_URL } from '$env/static/public';
 	import { useClerkContext } from 'svelte-clerk/client';
-	import { api } from '../../convex/_generated/api';
+	import { api } from '$convex/api';
 
 	let { children } = $props();
 

@@ -4,8 +4,8 @@
 	import { useQuery } from 'convex-svelte';
 	import { useClerkContext } from 'svelte-clerk/client';
 	import { toast } from 'svelte-sonner';
-	import { api } from '../../../../../convex/_generated/api';
-	import type { Id } from '../../../../../convex/_generated/dataModel';
+	import { api } from '$convex/api';
+	import type { Id } from '$convex/dataModel';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
