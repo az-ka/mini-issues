@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
-	import TicketStatusBadge from '$lib/components/ui/TicketStatusBadge.svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -90,14 +89,6 @@
 				{#if report.priority}
 					<Badge color={priorityColor[report.priority as Priority]}>{priorityLabel[report.priority as Priority]}</Badge>
 				{/if}
-				<TicketStatusBadge
-					trelloCardId={report.trelloCardId}
-					trelloCardFound={report.trelloCardFound}
-					trelloArchived={report.trelloArchived}
-					trelloStatus={report.trelloStatus}
-					trelloListIndex={report.trelloListIndex}
-					trelloTotalLists={report.trelloTotalLists}
-				/>
 			</div>
 
 			<p class="mb-3 text-sm font-medium leading-snug text-foreground">
