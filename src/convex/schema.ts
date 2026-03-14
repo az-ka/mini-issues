@@ -64,9 +64,19 @@ export default defineSchema({
 
 	// Trello board configurations managed by admin
 	trelloBoards: defineTable({
-		name: v.string(), // Display name, e.g. "FE", "BE"
-		boardId: v.string(), // Trello board ID (from board URL)
+		name: v.string(), // Custom display label set by admin (e.g. "Bug FE", "Feature BE")
+		boardId: v.string(), // Trello board ID
+		boardName: v.optional(v.string()), // Trello board name (from sync)
 		listId: v.string(), // Target list ID on that board
-		isActive: v.boolean() // Only active boards shown to users
+		listName: v.optional(v.string()), // Trello list name (from sync)
+		isActive: v.boolean(), // Only active boards shown to users
+		workspaceId: v.optional(v.string()), // Trello workspace/organization ID
+		workspaceName: v.optional(v.string()) // Trello workspace display name
+	}),
+
+	// Cached Trello structure (workspaces → boards → lists) — synced on-demand by admin
+	trelloSync: defineTable({
+		data: v.string(), // JSON: TrelloWorkspace[]
+		syncedAt: v.number() // epoch ms
 	})
 });

@@ -17,7 +17,7 @@
 <button
 	type="button"
 	{onclick}
-	class="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-sm transition-colors {variant ===
+	class="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2.5 text-left text-sm transition-colors {variant ===
 	'danger'
 		? 'text-danger hover:bg-danger/5'
 		: 'text-foreground hover:bg-surface-2'}"

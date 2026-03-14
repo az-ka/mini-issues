@@ -45,16 +45,24 @@ export const add = mutation({
 	args: {
 		name: v.string(),
 		boardId: v.string(),
+		boardName: v.optional(v.string()),
 		listId: v.string(),
-		isActive: v.boolean()
+		listName: v.optional(v.string()),
+		isActive: v.boolean(),
+		workspaceId: v.optional(v.string()),
+		workspaceName: v.optional(v.string())
 	},
 	handler: async (ctx, args) => {
 		await assertAdmin(ctx);
 		return await ctx.db.insert('trelloBoards', {
 			name: args.name.trim(),
 			boardId: args.boardId.trim(),
+			boardName: args.boardName,
 			listId: args.listId.trim(),
-			isActive: args.isActive
+			listName: args.listName,
+			isActive: args.isActive,
+			workspaceId: args.workspaceId,
+			workspaceName: args.workspaceName
 		});
 	}
 });
@@ -65,8 +73,12 @@ export const update = mutation({
 		id: v.id('trelloBoards'),
 		name: v.string(),
 		boardId: v.string(),
+		boardName: v.optional(v.string()),
 		listId: v.string(),
-		isActive: v.boolean()
+		listName: v.optional(v.string()),
+		isActive: v.boolean(),
+		workspaceId: v.optional(v.string()),
+		workspaceName: v.optional(v.string())
 	},
 	handler: async (ctx, args) => {
 		await assertAdmin(ctx);
@@ -74,8 +86,12 @@ export const update = mutation({
 		await ctx.db.patch(id, {
 			name: fields.name.trim(),
 			boardId: fields.boardId.trim(),
+			boardName: fields.boardName,
 			listId: fields.listId.trim(),
-			isActive: fields.isActive
+			listName: fields.listName,
+			isActive: fields.isActive,
+			workspaceId: fields.workspaceId,
+			workspaceName: fields.workspaceName
 		});
 	}
 });

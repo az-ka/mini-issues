@@ -3,27 +3,88 @@
 	import { api } from '$convex/api';
 	import { extractError } from '$lib/utils';
 	import BoardForm from '$lib/components/BoardForm.svelte';
+	import type { TrelloWorkspace } from '$lib/components/BoardForm.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import DropdownMenuItem from '$lib/components/ui/DropdownMenuItem.svelte';
 
 	const client = useConvexClient();
 	const boardsQuery = useQuery(api.trelloBoards.list, {});
+	const trelloSyncQuery = useQuery(api.trelloSync.get, {});
 
 	const boards = $derived(boardsQuery.data ?? []);
 
+	// Parse synced Trello data from Convex cache
+	const trelloData = $derived<TrelloWorkspace[]>(
+		(() => {
+			const raw = trelloSyncQuery.data?.data;
+			if (!raw) return [];
+			try {
+				return JSON.parse(raw);
+			} catch {
+				return [];
+			}
+		})()
+	);
+
+	const syncedAt = $derived(trelloSyncQuery.data?.syncedAt ?? null);
+
+	let isSyncing = $state(false);
+	let syncError = $state('');
+
+	async function handleSync() {
+		isSyncing = true;
+		syncError = '';
+		try {
+			const res = await fetch('/api/trello/sync');
+			if (!res.ok) {
+				const body = await res.json().catch(() => ({}));
+				throw new Error(body?.message ?? 'Gagal menghubungi Trello.');
+			}
+			const data: TrelloWorkspace[] = await res.json();
+			await client.mutation(api.trelloSync.save, { data: JSON.stringify(data) });
+		} catch (err) {
+			syncError = extractError(err, 'Gagal sinkronisasi. Periksa API key Trello.');
+		} finally {
+			isSyncing = false;
+		}
+	}
+
+	function formatSyncedAt(ts: number): string {
+		return new Intl.DateTimeFormat('id-ID', {
+			day: 'numeric',
+			month: 'short',
+			year: 'numeric',
+			hour: '2-digit',
+			minute: '2-digit'
+		}).format(new Date(ts));
+	}
+
+	// Add form state
 	let boardName = $state('');
+	let boardWorkspaceId = $state('');
+	let boardWorkspaceName = $state('');
 	let boardBoardId = $state('');
+	let boardBoardName = $state('');
 	let boardListId = $state('');
+	let boardListName = $state('');
 	let boardAddError = $state('');
 	let isAddingBoard = $state(false);
 	let showAddBoardForm = $state(false);
-	let confirmDeleteBoardId = $state<string | null>(null);
-	let boardError = $state<string | null>(null);
+
+	// Edit form state
 	let editingBoardId = $state<string | null>(null);
 	let editBoardName = $state('');
+	let editBoardWorkspaceId = $state('');
+	let editBoardWorkspaceName = $state('');
 	let editBoardBoardId = $state('');
+	let editBoardBoardName = $state('');
 	let editBoardListId = $state('');
+	let editBoardListName = $state('');
+
+	let deletingBoard = $state<{ id: string; name: string } | null>(null);
+	let boardError = $state<string | null>(null);
 
 	async function handleAddBoard() {
 		if (!boardName.trim() || !boardBoardId.trim() || !boardListId.trim() || isAddingBoard) return;
@@ -33,12 +94,20 @@
 			await client.mutation(api.trelloBoards.add, {
 				name: boardName.trim(),
 				boardId: boardBoardId.trim(),
+				boardName: boardBoardName || undefined,
 				listId: boardListId.trim(),
-				isActive: true
+				listName: boardListName || undefined,
+				isActive: true,
+				workspaceId: boardWorkspaceId || undefined,
+				workspaceName: boardWorkspaceName || undefined
 			});
 			boardName = '';
+			boardWorkspaceId = '';
+			boardWorkspaceName = '';
 			boardBoardId = '';
+			boardBoardName = '';
 			boardListId = '';
+			boardListName = '';
 			showAddBoardForm = false;
 		} catch (err) {
 			boardAddError = extractError(err, 'Gagal menambahkan board. Coba lagi.');
@@ -51,9 +120,9 @@
 		boardError = null;
 		try {
 			await client.mutation(api.trelloBoards.remove, { id: id as never });
-			confirmDeleteBoardId = null;
+			deletingBoard = null;
 		} catch (err) {
-			confirmDeleteBoardId = null;
+			deletingBoard = null;
 			boardError = extractError(err, 'Gagal menghapus board. Coba lagi.');
 		}
 	}
@@ -62,7 +131,11 @@
 		editingBoardId = board._id;
 		editBoardName = board.name;
 		editBoardBoardId = board.boardId;
+		editBoardBoardName = board.boardName ?? '';
 		editBoardListId = board.listId;
+		editBoardListName = board.listName ?? '';
+		editBoardWorkspaceId = board.workspaceId ?? '';
+		editBoardWorkspaceName = board.workspaceName ?? '';
 	}
 
 	async function handleToggleActive(board: (typeof boards)[0]) {
@@ -71,8 +144,12 @@
 				id: board._id as never,
 				name: board.name,
 				boardId: board.boardId,
+				boardName: board.boardName,
 				listId: board.listId,
-				isActive: !board.isActive
+				listName: board.listName,
+				isActive: !board.isActive,
+				workspaceId: board.workspaceId,
+				workspaceName: board.workspaceName
 			});
 		} catch (err) {
 			boardError = extractError(err, 'Gagal mengubah status board.');
@@ -87,8 +164,12 @@
 				id: id as never,
 				name: editBoardName.trim(),
 				boardId: editBoardBoardId.trim(),
+				boardName: editBoardBoardName || undefined,
 				listId: editBoardListId.trim(),
-				isActive: board.isActive
+				listName: editBoardListName || undefined,
+				isActive: board.isActive,
+				workspaceId: editBoardWorkspaceId || undefined,
+				workspaceName: editBoardWorkspaceName || undefined
 			});
 			editingBoardId = null;
 		} catch (err) {
@@ -98,44 +179,100 @@
 </script>
 
 <!-- Section header -->
-<div class="mb-4 flex items-start justify-between gap-3">
+<div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
 	<div>
 		<h2 class="text-sm font-semibold text-foreground">Trello Boards</h2>
 		<p class="mt-0.5 text-xs text-muted">
 			{boards.length} board{boards.length !== 1 ? 's' : ''} terhubung
+			{#if syncedAt}
+				· disinkron {formatSyncedAt(syncedAt)}
+			{/if}
 		</p>
 	</div>
-	<Button
-		onclick={() => {
-			showAddBoardForm = !showAddBoardForm;
-			boardAddError = '';
-		}}
-	>
-		<svg
-			xmlns="http://www.w3.org/2000/svg"
-			width="13"
-			height="13"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			stroke-width="2.5"
-			stroke-linecap="round"
-			stroke-linejoin="round"
+	<div class="flex items-center gap-2 sm:shrink-0">
+		<Button
+			class="flex-1 sm:flex-none"
+			variant="secondary"
+			disabled={isSyncing}
+			onclick={handleSync}
 		>
-			<line x1="12" y1="5" x2="12" y2="19" />
-			<line x1="5" y1="12" x2="19" y2="12" />
-		</svg>
-		Tambah
-	</Button>
+			{#if isSyncing}
+				<svg
+					class="animate-spin"
+					xmlns="http://www.w3.org/2000/svg"
+					width="13"
+					height="13"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
+					<path d="M21 12a9 9 0 11-6.219-8.56" />
+				</svg>
+				Sinkronisasi...
+			{:else}
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="13"
+					height="13"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
+					<polyline points="23 4 23 10 17 10" />
+					<polyline points="1 20 1 14 7 14" />
+					<path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+				</svg>
+				Sinkronisasi
+			{/if}
+		</Button>
+		<Button
+			class="flex-1 sm:flex-none"
+			onclick={() => {
+				showAddBoardForm = !showAddBoardForm;
+				boardAddError = '';
+			}}
+		>
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="13"
+				height="13"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2.5"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			>
+				<line x1="12" y1="5" x2="12" y2="19" />
+				<line x1="5" y1="12" x2="19" y2="12" />
+			</svg>
+			Tambah
+		</Button>
+	</div>
 </div>
+
+{#if syncError}
+	<p class="mb-3 text-xs text-danger">{syncError}</p>
+{/if}
 
 <!-- Add board form (collapsible) -->
 {#if showAddBoardForm}
 	<div class="mb-4 rounded-2xl border border-accent/30 bg-surface p-5">
 		<BoardForm
 			bind:name={boardName}
+			bind:workspaceId={boardWorkspaceId}
+			bind:workspaceName={boardWorkspaceName}
 			bind:boardId={boardBoardId}
+			bind:boardName={boardBoardName}
 			bind:listId={boardListId}
+			bind:listName={boardListName}
+			{trelloData}
 			error={boardAddError}
 			isLoading={isAddingBoard}
 			submitLabel="Tambah Board"
@@ -173,8 +310,12 @@
 					<!-- Name + IDs -->
 					<div class="min-w-0 flex-1">
 						<span class="text-sm font-medium text-foreground">{board.name}</span>
-						<p class="mt-0.5 truncate font-mono text-xs text-muted">
-							{board.boardId} · {board.listId}
+						<p class="mt-0.5 truncate text-xs text-muted">
+							{#if board.workspaceName || board.boardName || board.listName}
+								{[board.workspaceName, board.boardName, board.listName].filter(Boolean).join(' · ')}
+							{:else}
+								<span class="font-mono">{board.boardId} · {board.listId}</span>
+							{/if}
 						</p>
 					</div>
 
@@ -240,52 +381,30 @@
 								</svg>
 								Edit
 							</DropdownMenuItem>
-							{#if confirmDeleteBoardId === board._id}
-								<div class="border-t border-border px-3 py-2">
-									<p class="mb-1.5 text-xs text-danger">Yakin hapus board ini?</p>
-									<div class="flex gap-1.5">
-										<button
-											type="button"
-											onclick={() => handleDeleteBoard(board._id)}
-											class="rounded px-2 py-0.5 text-xs font-medium text-danger hover:bg-danger/10"
-										>
-											Ya, hapus
-										</button>
-										<button
-											type="button"
-											onclick={() => (confirmDeleteBoardId = null)}
-											class="rounded px-2 py-0.5 text-xs text-muted hover:text-foreground"
-										>
-											Batal
-										</button>
-									</div>
-								</div>
-							{:else}
-								<DropdownMenuItem
-									variant="danger"
-									separator
-									onclick={() => (confirmDeleteBoardId = board._id)}
+							<DropdownMenuItem
+								variant="danger"
+								separator
+								onclick={() => (deletingBoard = { id: board._id, name: board.name })}
+							>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="13"
+									height="13"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
 								>
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="13"
-										height="13"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										stroke-width="2"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-									>
-										<polyline points="3 6 5 6 21 6" />
-										<path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
-										<path d="M10 11v6" />
-										<path d="M14 11v6" />
-										<path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
-									</svg>
-									Hapus
-								</DropdownMenuItem>
-							{/if}
+									<polyline points="3 6 5 6 21 6" />
+									<path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+									<path d="M10 11v6" />
+									<path d="M14 11v6" />
+									<path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+								</svg>
+								Hapus
+							</DropdownMenuItem>
 						{/snippet}
 					</DropdownMenu>
 				</div>
@@ -295,8 +414,13 @@
 					<div class="border-t border-accent/20 bg-surface-2/40 px-4 py-4">
 						<BoardForm
 							bind:name={editBoardName}
+							bind:workspaceId={editBoardWorkspaceId}
+							bind:workspaceName={editBoardWorkspaceName}
 							bind:boardId={editBoardBoardId}
+							bind:boardName={editBoardBoardName}
 							bind:listId={editBoardListId}
+							bind:listName={editBoardListName}
+							{trelloData}
 							submitLabel="Simpan"
 							onsubmit={() => handleUpdateBoard(board._id)}
 							oncancel={() => (editingBoardId = null)}
@@ -337,28 +461,16 @@
 	</div>
 {/if}
 
-<!-- Info note -->
-<div class="mt-4 flex items-start gap-2.5 rounded-xl border border-border bg-surface px-4 py-3">
-	<svg
-		xmlns="http://www.w3.org/2000/svg"
-		width="14"
-		height="14"
-		viewBox="0 0 24 24"
-		fill="none"
-		stroke="currentColor"
-		stroke-width="2"
-		stroke-linecap="round"
-		stroke-linejoin="round"
-		class="mt-0.5 shrink-0 text-muted"
-	>
-		<circle cx="12" cy="12" r="10" />
-		<line x1="12" y1="8" x2="12" y2="12" />
-		<line x1="12" y1="16" x2="12.01" y2="16" />
-	</svg>
-	<p class="text-xs leading-relaxed text-muted">
-		Board ID dari URL Trello: <code class="rounded bg-surface-2 px-1 py-0.5 font-mono text-accent"
-			>trello.com/b/<strong>BoardID</strong>/nama</code
-		>. List ID: buka board lalu tambahkan
-		<code class="rounded bg-surface-2 px-1 py-0.5 font-mono text-accent">.json</code> di akhir URL.
-	</p>
-</div>
+<!-- Delete confirmation modal -->
+<Dialog open={!!deletingBoard} title="Hapus Board" onclose={() => (deletingBoard = null)}>
+	{#snippet children()}
+		Yakin ingin menghapus board <strong class="text-foreground">{deletingBoard?.name}</strong>?
+		Tindakan ini tidak dapat dibatalkan.
+	{/snippet}
+	{#snippet footer()}
+		<Button variant="ghost" onclick={() => (deletingBoard = null)}>Batal</Button>
+		<Button variant="danger" onclick={() => deletingBoard && handleDeleteBoard(deletingBoard.id)}>
+			Ya, hapus
+		</Button>
+	{/snippet}
+</Dialog>
