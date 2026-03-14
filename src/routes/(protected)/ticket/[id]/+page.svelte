@@ -1,72 +1,75 @@
 <script lang="ts">
+	import { page } from '$app/state';
+	import { useQuery } from 'convex-svelte';
+	import { api } from '../../../../convex/_generated/api';
+	import type { Id } from '../../../../convex/_generated/dataModel';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import TicketStatusBadge from '$lib/components/ui/TicketStatusBadge.svelte';
-	import type { PageData } from './$types';
-
-	let { data }: { data: PageData } = $props();
-
-	const report = $derived(data.report);
-	const reporterName = $derived(data.reporterName ?? 'Tidak diketahui');
+	import NotFound from '$lib/components/ui/NotFound.svelte';
 
 	type TicketType = 'bug' | 'feature' | 'improvement';
 	type Priority = 'high' | 'medium' | 'low';
 
+	const reportId = $derived(page.params.id as Id<'reports'>);
+	const reportQuery = useQuery(api.reports.getById, () => ({ id: reportId }));
+	const reporterQuery = useQuery(
+		api.users.getById,
+		() => reportQuery.data ? { id: reportQuery.data.reporterId } : 'skip'
+	);
+
 	function parseAttachments(json: string | undefined): { name: string; url: string }[] {
 		if (!json) return [];
-		try {
-			return JSON.parse(json);
-		} catch {
-			return [];
-		}
+		try { return JSON.parse(json); } catch { return []; }
 	}
 
-	const isBug = $derived(report.type === 'bug');
+	const report = $derived(reportQuery.data);
+	const reporterName = $derived(reporterQuery.data?.name ?? 'Tidak diketahui');
+	const isBug = $derived(report?.type === 'bug');
 	const ticketId = $derived(
-		report.ticketNumber ? `MI-${String(report.ticketNumber).padStart(3, '0')}` : '—'
+		report?.ticketNumber ? `MI-${String(report.ticketNumber).padStart(3, '0')}` : '—'
 	);
-	const trelloDeleted = $derived(report.trelloCardId && report.trelloCardFound === false);
-	const trelloArchived = $derived(report.trelloCardId && report.trelloArchived === true);
-
-	const savedAttachments = $derived(parseAttachments(report.attachmentUrls));
-
+	const trelloDeleted = $derived(report?.trelloCardId && report?.trelloCardFound === false);
+	const trelloArchived = $derived(report?.trelloCardId && report?.trelloArchived === true);
+	const savedAttachments = $derived(parseAttachments(report?.attachmentUrls));
 	const reportDate = $derived(
-		new Intl.DateTimeFormat('id-ID', {
-			day: 'numeric',
-			month: 'long',
-			year: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit'
-		}).format(new Date(report.createdAt))
+		report
+			? new Intl.DateTimeFormat('id-ID', {
+					day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+				}).format(new Date(report.createdAt))
+			: '—'
 	);
 
 	const typeColor: Record<TicketType, 'red' | 'blue' | 'green'> = {
-		bug: 'red',
-		feature: 'blue',
-		improvement: 'green'
+		bug: 'red', feature: 'blue', improvement: 'green'
 	};
-
 	const typeLabel: Record<TicketType, string> = {
-		bug: 'Bug',
-		feature: 'Feature',
-		improvement: 'Improvement'
+		bug: 'Bug', feature: 'Feature', improvement: 'Improvement'
 	};
-
 	const priorityColor: Record<Priority, 'red' | 'yellow' | 'green'> = {
-		high: 'red',
-		medium: 'yellow',
-		low: 'green'
+		high: 'red', medium: 'yellow', low: 'green'
+	};
+	const priorityLabel: Record<Priority, string> = {
+		high: 'High', medium: 'Medium', low: 'Low'
 	};
 
-	const priorityLabel: Record<Priority, string> = {
-		high: 'High',
-		medium: 'Medium',
-		low: 'Low'
-	};
+	// Background Trello status fetch — fires after report loads, respects cooldown server-side
+	$effect(() => {
+		if (!report?.trelloCardId) return;
+		fetch(`/api/trello-status/${report._id}`, { method: 'POST' }).catch(() => {});
+	});
 </script>
 
 <div class="mx-auto min-h-dvh max-w-2xl px-4 py-8">
 	<PageHeader title="Detail Tiket" backHref="/history" backLabel="Kembali ke Riwayat" />
+
+	{#if reportQuery.isLoading}
+		<div class="flex flex-col gap-3 pt-4">
+			{#each [1, 2, 3, 4] as _}
+				<div class="h-10 animate-pulse rounded-xl bg-surface-2"></div>
+			{/each}
+		</div>
+	{:else if report}
 
 	<!-- Alert: Trello card deleted (404) -->
 	{#if trelloDeleted}
@@ -398,4 +401,12 @@
 	</div>
 
 	<div class="pb-8"></div>
+	{:else}
+		<NotFound
+			title="Tiket tidak ditemukan"
+			message="Tiket ini tidak ada atau kamu tidak punya akses."
+			backHref="/history"
+			backLabel="Kembali ke Riwayat"
+		/>
+	{/if}
 </div>
