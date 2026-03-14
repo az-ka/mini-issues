@@ -1,21 +1,12 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { useClerkContext } from 'svelte-clerk/client';
-	import Input from '$lib/components/ui/Input.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
 
 	const ctx = useClerkContext();
 
-	type Step = 'email' | 'otp';
-
-	let step = $state<Step>('email');
-	let email = $state('');
-	let otp = $state('');
 	let isLoading = $state(false);
 	let error = $state('');
 
-	// Show error if redirected from whitelist guard
 	$effect(() => {
 		const urlError = page.url.searchParams.get('error');
 		if (urlError === 'not_whitelisted') {
@@ -24,72 +15,11 @@
 		}
 	});
 
-	const clerkErrorMessages: Record<string, string> = {
-		form_identifier_not_found: 'Email tidak ditemukan. Pastikan email sudah terdaftar.',
-		form_code_incorrect: 'Kode tidak valid. Periksa kembali kode yang dikirim.',
-		too_many_requests: 'Terlalu banyak percobaan. Coba lagi beberapa saat.',
-		session_exists: 'Kamu sudah login.'
-	};
-
-	function getErrorMessage(err: unknown): string {
-		if (err && typeof err === 'object' && 'errors' in err) {
-			const clerkErr = err as { errors: { code: string; message: string }[] };
-			const code = clerkErr.errors?.[0]?.code;
-			return clerkErrorMessages[code] ?? clerkErr.errors?.[0]?.message ?? 'Terjadi kesalahan.';
-		}
-		return 'Terjadi kesalahan. Coba lagi.';
-	}
-
-	async function handleEmailSubmit() {
-		if (!email.trim() || isLoading) return;
-		const clerk = ctx.clerk;
-		if (!clerk) return;
-
-		isLoading = true;
-		error = '';
-
-		try {
-			await clerk.client!.signIn.create({
-				identifier: email.trim(),
-				strategy: 'email_code'
-			});
-			step = 'otp';
-		} catch (err) {
-			error = getErrorMessage(err);
-		} finally {
-			isLoading = false;
-		}
-	}
-
-	async function handleOtpSubmit() {
-		if (otp.trim().length !== 6 || isLoading) return;
-		const clerk = ctx.clerk;
-		if (!clerk) return;
-
-		isLoading = true;
-		error = '';
-
-		try {
-			const result = await clerk.client!.signIn.attemptFirstFactor({
-				strategy: 'email_code',
-				code: otp.trim()
-			});
-
-			if (result.status === 'complete') {
-				await clerk.setActive({ session: result.createdSessionId });
-				goto('/dashboard');
-			}
-		} catch (err) {
-			error = getErrorMessage(err);
-			otp = '';
-		} finally {
-			isLoading = false;
-		}
-	}
-
 	async function handleGoogleLogin() {
 		const clerk = ctx.clerk;
-		if (!clerk) return;
+		if (!clerk || isLoading) return;
+
+		isLoading = true;
 		error = '';
 
 		try {
@@ -99,22 +29,9 @@
 				redirectUrlComplete: '/dashboard'
 			});
 		} catch (err) {
-			error = getErrorMessage(err);
+			error = 'Terjadi kesalahan. Coba lagi.';
+			isLoading = false;
 		}
-	}
-
-	function handleBack() {
-		step = 'email';
-		otp = '';
-		error = '';
-	}
-
-	function handleEmailKeydown(e: KeyboardEvent) {
-		if (e.key === 'Enter') handleEmailSubmit();
-	}
-
-	function handleOtpKeydown(e: KeyboardEvent) {
-		if (e.key === 'Enter') handleOtpSubmit();
 	}
 </script>
 
@@ -146,65 +63,33 @@
 
 		<!-- Card -->
 		<div class="rounded-2xl border border-border bg-surface p-6">
-			{#if step === 'email'}
-				<!-- Step 1: Email -->
-				<div class="mb-5">
-					<label for="email" class="mb-1.5 block text-sm font-medium text-foreground">
-						Email kantor
-					</label>
-					<Input
-						id="email"
-						type="email"
-						bind:value={email}
-						placeholder="nama@perusahaan.com"
-						disabled={isLoading}
-					/>
-					<!-- svelte-ignore a11y_no_static_element_interactions -->
-					<div onkeydown={handleEmailKeydown} class="contents"></div>
-				</div>
+			<p class="mb-5 text-center text-sm text-muted">
+				Masuk menggunakan akun Google yang sudah di whitelist.
+			</p>
 
-				<Button
-					type="button"
-					size="lg"
-					class="w-full"
-					disabled={!email.trim() || isLoading}
-					onclick={handleEmailSubmit}
-				>
-					{#if isLoading}
-						<svg
-							class="animate-spin"
-							xmlns="http://www.w3.org/2000/svg"
-							width="16"
-							height="16"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						>
-							<path d="M21 12a9 9 0 11-6.219-8.56" />
-						</svg>
-						Mengirim kode...
-					{:else}
-						Masuk dengan Email
-					{/if}
-				</Button>
-
-				<!-- Divider -->
-				<div class="my-4 flex items-center gap-3">
-					<div class="h-px flex-1 bg-border"></div>
-					<span class="text-xs text-muted">atau</span>
-					<div class="h-px flex-1 bg-border"></div>
-				</div>
-
-				<!-- Google button -->
-				<button
-					type="button"
-					onclick={handleGoogleLogin}
-					disabled={isLoading}
-					class="flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-surface-2 px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-accent/30 hover:bg-border disabled:cursor-not-allowed disabled:opacity-50"
-				>
+			<button
+				type="button"
+				onclick={handleGoogleLogin}
+				disabled={isLoading}
+				class="flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-surface-2 px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-accent/30 hover:bg-border disabled:cursor-not-allowed disabled:opacity-50"
+			>
+				{#if isLoading}
+					<svg
+						class="animate-spin text-muted"
+						xmlns="http://www.w3.org/2000/svg"
+						width="18"
+						height="18"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					>
+						<path d="M21 12a9 9 0 11-6.219-8.56" />
+					</svg>
+					Mengarahkan...
+				{:else}
 					<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
 						<path
 							fill="#4285F4"
@@ -224,83 +109,9 @@
 						/>
 					</svg>
 					Lanjutkan dengan Google
-				</button>
-			{:else}
-				<!-- Step 2: OTP -->
-				<div class="mb-5">
-					<button
-						type="button"
-						onclick={handleBack}
-						class="mb-4 flex items-center gap-1.5 text-xs text-muted transition-colors hover:text-foreground"
-					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="14"
-							height="14"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						>
-							<path d="M15 18l-6-6 6-6" />
-						</svg>
-						Ganti email
-					</button>
+				{/if}
+			</button>
 
-					<div class="mb-4 rounded-xl border border-border bg-surface-2 px-4 py-3 text-center">
-						<p class="text-xs text-muted">Kode dikirim ke</p>
-						<p class="mt-0.5 text-sm font-medium text-foreground">{email}</p>
-					</div>
-
-					<label for="otp" class="mb-1.5 block text-sm font-medium text-foreground">
-						Masukkan kode 6 digit
-					</label>
-					<input
-						id="otp"
-						type="text"
-						inputmode="numeric"
-						maxlength={6}
-						bind:value={otp}
-						onkeydown={handleOtpKeydown}
-						placeholder="000000"
-						disabled={isLoading}
-						class="w-full rounded-lg border border-border bg-surface-2 px-3.5 py-3 text-center text-xl font-semibold tracking-[0.5em] text-foreground transition-colors placeholder:tracking-widest placeholder:text-muted/40 focus:border-accent/50 focus:ring-2 focus:ring-accent/15 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-					/>
-					<p class="mt-1.5 text-xs text-muted">Periksa inbox atau folder spam kamu.</p>
-				</div>
-
-				<Button
-					type="button"
-					size="lg"
-					class="w-full"
-					disabled={otp.trim().length !== 6 || isLoading}
-					onclick={handleOtpSubmit}
-				>
-					{#if isLoading}
-						<svg
-							class="animate-spin"
-							xmlns="http://www.w3.org/2000/svg"
-							width="16"
-							height="16"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						>
-							<path d="M21 12a9 9 0 11-6.219-8.56" />
-						</svg>
-						Memverifikasi...
-					{:else}
-						Verifikasi Kode
-					{/if}
-				</Button>
-			{/if}
-
-			<!-- Error -->
 			{#if error}
 				<div
 					class="mt-4 flex items-start gap-2.5 rounded-xl border border-danger/20 bg-danger/5 px-4 py-3"
@@ -326,8 +137,7 @@
 			{/if}
 		</div>
 
-		<!-- Footer note -->
-		<p class="mt-4 text-center text-xs text-muted">
+		<!-- <p class="mt-4 text-center text-xs text-muted">
 			Belum punya akses?
 			<a
 				href="mailto:admin@perusahaan.com"
@@ -336,6 +146,6 @@
 			>
 				Hubungi admin
 			</a>
-		</p>
+		</p> -->
 	</div>
 </div>
