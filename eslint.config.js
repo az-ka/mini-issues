@@ -24,7 +24,10 @@ export default defineConfig(
 			// see: https://typescript-eslint.io/troubleshooting/faqs/eslint/#i-get-errors-from-the-no-undef-rule-about-global-variables-not-being-defined-even-though-there-are-no-typescript-errors
 			'no-undef': 'off',
 			'svelte/no-goto-without-base': 'off',
-			'svelte/no-href-without-base': 'off'
+			'svelte/no-href-without-base': 'off',
+			// Bug in eslint-plugin-svelte v3 — crashes on <input> elements
+			// https://github.com/sveltejs/eslint-plugin-svelte/issues
+			'svelte/no-navigation-without-resolve': 'off'
 		}
 	},
 	{
