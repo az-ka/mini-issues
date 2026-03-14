@@ -1,9 +1,8 @@
 <script lang="ts">
 	import Badge from './ui/Badge.svelte';
 	import TicketStatusBadge from './ui/TicketStatusBadge.svelte';
-
-	type TicketType = 'bug' | 'feature' | 'improvement';
-	type Priority = 'high' | 'medium' | 'low';
+	import { TYPE_COLOR, TYPE_LABEL, PRIORITY_COLOR, PRIORITY_LABEL } from '$lib/constants/ticket';
+	import type { TicketType, Priority } from '$lib/constants/ticket';
 
 	interface Props {
 		id: string;
@@ -37,29 +36,10 @@
 		trelloTotalLists
 	}: Props = $props();
 
-	const typeColor: Record<TicketType, 'red' | 'blue' | 'green'> = {
-		bug: 'red',
-		feature: 'blue',
-		improvement: 'green'
-	};
-
-	const typeLabel: Record<TicketType, string> = {
-		bug: 'Bug',
-		feature: 'Feature',
-		improvement: 'Improvement'
-	};
-
-	const priorityColor: Record<Priority, 'red' | 'yellow' | 'green'> = {
-		high: 'red',
-		medium: 'yellow',
-		low: 'green'
-	};
-
-	const priorityLabel: Record<Priority, string> = {
-		high: 'High',
-		medium: 'Medium',
-		low: 'Low'
-	};
+	const typeColor: Record<TicketType, 'red' | 'blue' | 'green'> = TYPE_COLOR;
+	const typeLabel: Record<TicketType, string> = TYPE_LABEL;
+	const priorityColor: Record<Priority, 'red' | 'yellow' | 'green'> = PRIORITY_COLOR;
+	const priorityLabel: Record<Priority, string> = PRIORITY_LABEL;
 </script>
 
 <a

@@ -7,9 +7,8 @@
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import TicketStatusBadge from '$lib/components/ui/TicketStatusBadge.svelte';
 	import NotFound from '$lib/components/ui/NotFound.svelte';
-
-	type TicketType = 'bug' | 'feature' | 'improvement';
-	type Priority = 'high' | 'medium' | 'low';
+	import { TYPE_COLOR, TYPE_LABEL, PRIORITY_COLOR, PRIORITY_LABEL } from '$lib/constants/ticket';
+	import type { TicketType, Priority } from '$lib/constants/ticket';
 
 	const reportId = $derived(page.params.id as Id<'reports'>);
 	const reportQuery = useQuery(api.reports.getById, () => ({ id: reportId }));
@@ -39,19 +38,6 @@
 				}).format(new Date(report.createdAt))
 			: '—'
 	);
-
-	const typeColor: Record<TicketType, 'red' | 'blue' | 'green'> = {
-		bug: 'red', feature: 'blue', improvement: 'green'
-	};
-	const typeLabel: Record<TicketType, string> = {
-		bug: 'Bug', feature: 'Feature', improvement: 'Improvement'
-	};
-	const priorityColor: Record<Priority, 'red' | 'yellow' | 'green'> = {
-		high: 'red', medium: 'yellow', low: 'green'
-	};
-	const priorityLabel: Record<Priority, string> = {
-		high: 'High', medium: 'Medium', low: 'Low'
-	};
 
 	// Background Trello status fetch — fires after report loads, respects cooldown server-side
 	$effect(() => {
@@ -129,9 +115,9 @@
 		<div class="mb-3 flex flex-wrap items-center gap-2">
 			<span class="font-mono text-xs font-semibold text-accent">{ticketId}</span>
 			<span class="text-muted">·</span>
-			<Badge color={typeColor[report.type as TicketType]}>{typeLabel[report.type as TicketType]}</Badge>
+			<Badge color={TYPE_COLOR[report.type as TicketType]}>{TYPE_LABEL[report.type as TicketType]}</Badge>
 			{#if report.priority}
-				<Badge color={priorityColor[report.priority as Priority]}>{priorityLabel[report.priority as Priority]}</Badge>
+				<Badge color={PRIORITY_COLOR[report.priority as Priority]}>{PRIORITY_LABEL[report.priority as Priority]}</Badge>
 			{/if}
 
 			<!-- Status badge (position-based coloring) -->
