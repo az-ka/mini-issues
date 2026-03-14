@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
 	import { useQuery } from 'convex-svelte';
 	import { useClerkContext } from 'svelte-clerk/client';
 	import { toast } from 'svelte-sonner';
@@ -10,6 +11,7 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
+	import NotFound from '$lib/components/ui/NotFound.svelte';
 
 	type TicketType = 'bug' | 'feature' | 'improvement';
 	type Priority = 'high' | 'medium' | 'low';
@@ -48,7 +50,6 @@
 
 	// Derived from Convex — already sent if trelloCardId exists
 	const alreadySent = $derived(!!reportQuery.data?.trelloCardId);
-	const trelloCardUrl = $derived(reportQuery.data?.trelloCardUrl ?? '');
 	const savedAttachments = $derived<{ name: string; url: string }[]>(
 		reportQuery.data?.attachmentUrls ? JSON.parse(reportQuery.data.attachmentUrls) : []
 	);
@@ -183,6 +184,7 @@
 			}
 
 			toast.success('Tiket berhasil dikirim ke Trello!');
+			await goto(`/report/success/${reportId}`);
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : 'Gagal mengirim ke Trello. Coba lagi.');
 		} finally {
@@ -407,31 +409,17 @@
 
 		<!-- Actions -->
 		<div class="flex flex-col gap-3 pt-2 pb-8">
-			{#if alreadySent}
-				<a
-					href={trelloCardUrl}
-					target="_blank"
-					rel="noopener noreferrer"
-					class="flex w-full items-center justify-center gap-2 rounded-xl border border-success/30 bg-success/10 px-4 py-3 text-sm font-medium text-success transition-colors hover:bg-success/15"
-				>
+			<Button size="lg" class="w-full" onclick={sendToTrello} disabled={isSending || alreadySent}>
+				{#if isSending}
+					<div class="h-4 w-4 animate-spin rounded-full border-2 border-bg border-t-transparent"></div>
+					Mengirim...
+				{:else}
 					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 						<path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
 					</svg>
-					Sudah dikirim — Lihat di Trello →
-				</a>
-			{:else}
-				<Button size="lg" class="w-full" onclick={sendToTrello} disabled={isSending}>
-					{#if isSending}
-						<div class="h-4 w-4 animate-spin rounded-full border-2 border-bg border-t-transparent"></div>
-						Mengirim...
-					{:else}
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-							<path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
-						</svg>
-						Kirim ke Trello
-					{/if}
-				</Button>
-			{/if}
+					Kirim ke Trello
+				{/if}
+			</Button>
 			<a href="/report/chat" class="text-center text-sm text-muted transition-colors hover:text-foreground">
 				← Kembali ke Chat
 			</a>
@@ -443,12 +431,10 @@
 
 <!-- Not found: full-page centered (shown when query resolves but data is null) -->
 {#if !reportQuery.isLoading && !reportQuery.data}
-	<div class="fixed inset-0 flex flex-col items-center justify-center px-4 text-center">
-		<p class="mb-2 font-mono text-5xl font-bold text-accent">404</p>
-		<p class="mb-1 text-base font-semibold text-foreground">Draft tidak ditemukan</p>
-		<p class="mb-6 text-sm text-muted">Draft tiket ini tidak ada atau kamu tidak punya akses.</p>
-		<Button href="/dashboard">Kembali ke Dashboard</Button>
-	</div>
+	<NotFound
+		title="Draft tidak ditemukan"
+		message="Draft tiket ini tidak ada atau kamu tidak punya akses."
+	/>
 {/if}
 
 <!-- File preview modal -->
