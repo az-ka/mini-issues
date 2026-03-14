@@ -1,12 +1,10 @@
 pre-commit:
   commands:
     format:
-      run: bunx prettier --write {staged_files}
-      glob: "*.{js,ts,svelte,css,json,md}"
+      run: bun run format
       stage_fixed: true
 
 pre-push:
   commands:
     lint:
       run: bun run lint
-
