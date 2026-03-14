@@ -165,6 +165,28 @@ export const listRecent = query({
 	}
 });
 
+// List all reports newest first, with reporter name joined. numItems controls how many to load.
+export const listAll = query({
+	args: { numItems: v.number() },
+	handler: async (ctx, args) => {
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) return { reports: [], hasMore: false };
+
+		const fetched = await ctx.db.query('reports').order('desc').take(args.numItems + 1);
+		const hasMore = fetched.length > args.numItems;
+		const page = fetched.slice(0, args.numItems);
+
+		const reports = await Promise.all(
+			page.map(async (report) => {
+				const reporter = await ctx.db.get(report.reporterId);
+				return { ...report, reporterName: reporter?.name ?? null };
+			})
+		);
+
+		return { reports, hasMore };
+	}
+});
+
 // Update Trello sync status (called from +page.server.ts after fetching Trello API)
 export const updateTrelloStatus = mutation({
 	args: {

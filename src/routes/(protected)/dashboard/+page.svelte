@@ -6,6 +6,7 @@
 	import { api } from '../../../convex/_generated/api';
 	import Button from '$lib/components/ui/Button.svelte';
 	import TicketCard from '$lib/components/TicketCard.svelte';
+	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 
 	const ctx = useClerkContext();
 	const ticketsQuery = useQuery(api.reports.listRecent, () => ({}));
@@ -175,7 +176,7 @@
 	<!-- Recent tickets -->
 	<div>
 		<div class="mb-3 flex items-center justify-between">
-			<h3 class="text-sm font-semibold text-foreground">Tiket Terbaru</h3>
+			<h3 class="text-sm font-semibold text-foreground">Laporan Terbaru</h3>
 			<a href="/history" class="text-xs text-muted transition-colors hover:text-accent">
 				Lihat semua →
 			</a>
@@ -207,9 +208,13 @@
 				{/each}
 			</div>
 		{:else}
-			<div class="rounded-xl border border-border bg-surface py-12 text-center">
-				<p class="text-sm text-muted">Belum ada tiket. Buat laporan pertamamu!</p>
-			</div>
+			<EmptyState
+				icon="inbox"
+				title="Belum ada laporan"
+				message="Buat laporan pertama untuk memulai."
+				actionLabel="Buat laporan baru"
+				actionHref="/report/chat"
+			/>
 		{/if}
 	</div>
 </div>

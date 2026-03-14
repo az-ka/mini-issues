@@ -1,103 +1,69 @@
 <script lang="ts">
+	import { useQuery } from 'convex-svelte';
+	import { useClerkContext } from 'svelte-clerk/client';
+	import { api } from '../../../convex/_generated/api';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import TicketCard from '$lib/components/TicketCard.svelte';
+	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 
 	type TicketType = 'bug' | 'feature' | 'improvement';
-	type Priority = 'high' | 'medium' | 'low';
 
-	interface Ticket {
-		id: string;
-		title: string;
-		type: TicketType;
-		priority: Priority;
-		status: string;
-		date: string;
-	}
+	const ctx = useClerkContext();
 
-	const allTickets: Ticket[] = [
-		{
-			id: '1',
-			title: 'Tombol login tidak merespon setelah salah password 3 kali',
-			type: 'bug',
-			priority: 'high',
-			status: 'Sedang Dikerjakan',
-			date: '2 jam lalu'
-		},
-		{
-			id: '2',
-			title: 'Tambahkan fitur export laporan ke PDF',
-			type: 'feature',
-			priority: 'medium',
-			status: 'Menunggu Review',
-			date: '1 hari lalu'
-		},
-		{
-			id: '3',
-			title: 'Tampilan tabel di halaman laporan tidak rapi di layar kecil',
-			type: 'improvement',
-			priority: 'low',
-			status: 'Menunggu Review',
-			date: '3 hari lalu'
-		},
-		{
-			id: '4',
-			title: 'Data transaksi tidak tersimpan saat koneksi terputus',
-			type: 'bug',
-			priority: 'high',
-			status: 'Selesai',
-			date: '5 hari lalu'
-		},
-		{
-			id: '5',
-			title: 'Notifikasi email tidak terkirim setelah submit form',
-			type: 'bug',
-			priority: 'medium',
-			status: 'Dalam Review',
-			date: '1 minggu lalu'
-		},
-		{
-			id: '6',
-			title: 'Tambahkan filter tanggal di halaman riwayat transaksi',
-			type: 'feature',
-			priority: 'medium',
-			status: 'Selesai',
-			date: '2 minggu lalu'
-		},
-		{
-			id: '7',
-			title: 'Warna tombol utama kurang kontras di mode terang',
-			type: 'improvement',
-			priority: 'low',
-			status: 'Ditolak',
-			date: '3 minggu lalu'
-		}
-	];
+	let numItems = $state(15);
+	const ticketsQuery = useQuery(api.reports.listAll, () => ({ numItems }));
 
 	let search = $state('');
 	let filterType = $state<TicketType | 'all'>('all');
-	let filterStatus = $state('all');
-
-	const statusOptions = ['all', 'Menunggu Review', 'Sedang Dikerjakan', 'Dalam Review', 'Selesai', 'Ditolak'];
+	let showMine = $state(false);
 
 	const typeOptions: { value: TicketType | 'all'; label: string }[] = [
-		{ value: 'all', label: 'Semua Tipe' },
+		{ value: 'all', label: 'Semua' },
 		{ value: 'bug', label: 'Bug' },
 		{ value: 'feature', label: 'Feature' },
 		{ value: 'improvement', label: 'Improvement' }
 	];
 
-	const filteredTickets = $derived(
-		allTickets.filter((t) => {
+	function relativeDate(epochMs: number): string {
+		const diff = Date.now() - epochMs;
+		const mins = Math.floor(diff / 60_000);
+		if (mins < 1) return 'Baru saja';
+		if (mins < 60) return `${mins} menit lalu`;
+		const hours = Math.floor(mins / 60);
+		if (hours < 24) return `${hours} jam lalu`;
+		const days = Math.floor(hours / 24);
+		if (days < 30) return `${days} hari lalu`;
+		const months = Math.floor(days / 30);
+		return `${months} bulan lalu`;
+	}
+
+	const allLoaded = $derived(ticketsQuery.data?.reports ?? []);
+	const hasMore = $derived(ticketsQuery.data?.hasMore ?? false);
+
+	const currentUserName = $derived(
+		ctx.user?.fullName ?? ctx.user?.firstName ?? null
+	);
+
+	const filtered = $derived(
+		allLoaded.filter((t) => {
 			const matchSearch = t.title.toLowerCase().includes(search.toLowerCase());
 			const matchType = filterType === 'all' || t.type === filterType;
-			const matchStatus = filterStatus === 'all' || t.status === filterStatus;
-			return matchSearch && matchType && matchStatus;
+			const matchMine = !showMine || t.reporterName === currentUserName;
+			return matchSearch && matchType && matchMine;
 		})
 	);
+
+	const hasActiveFilter = $derived(search !== '' || filterType !== 'all' || showMine);
+
+	function resetFilters() {
+		search = '';
+		filterType = 'all';
+		showMine = false;
+	}
 </script>
 
 <div class="mx-auto min-h-dvh max-w-2xl px-4 py-8">
-	<PageHeader title="Riwayat Tiket" backHref="/dashboard" backLabel="Kembali ke Dashboard" />
+	<PageHeader title="Riwayat Laporan" backHref="/dashboard" backLabel="Kembali ke Dashboard" />
 
 	<!-- Search -->
 	<div class="relative mb-4">
@@ -119,19 +85,18 @@
 		<input
 			type="text"
 			bind:value={search}
-			placeholder="Cari tiket berdasarkan judul..."
+			placeholder="Cari laporan berdasarkan judul..."
 			class="w-full rounded-lg border border-border bg-surface-2 py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted/60 transition-colors focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/15"
 		/>
 	</div>
 
 	<!-- Filters -->
-	<div class="mb-6 flex flex-wrap gap-2">
-		<!-- Type filter -->
+	<div class="mb-6 flex flex-wrap items-center gap-2">
 		{#each typeOptions as opt}
 			<button
 				type="button"
 				onclick={() => (filterType = opt.value)}
-				class="rounded-full border px-3 py-1 text-xs font-medium transition-colors {filterType === opt.value
+				class="rounded-full border px-3 py-1 text-xs font-medium transition-colors cursor-pointer {filterType === opt.value
 					? 'border-accent/40 bg-accent/10 text-accent'
 					: 'border-border bg-surface text-muted hover:border-accent/20 hover:text-foreground'}"
 			>
@@ -141,63 +106,72 @@
 
 		<div class="h-5 w-px self-center bg-border"></div>
 
-		<!-- Status filter -->
-		{#each statusOptions as status}
-			<button
-				type="button"
-				onclick={() => (filterStatus = status)}
-				class="rounded-full border px-3 py-1 text-xs font-medium transition-colors {filterStatus === status
-					? 'border-accent/40 bg-accent/10 text-accent'
-					: 'border-border bg-surface text-muted hover:border-accent/20 hover:text-foreground'}"
-			>
-				{status === 'all' ? 'Semua Status' : status}
-			</button>
-		{/each}
+		<!-- Laporan Saya toggle -->
+		<button
+			type="button"
+			onclick={() => (showMine = !showMine)}
+			class="rounded-full border px-3 py-1 text-xs font-medium transition-colors cursor-pointer {showMine
+				? 'border-accent/40 bg-accent/10 text-accent'
+				: 'border-border bg-surface text-muted hover:border-accent/20 hover:text-foreground'}"
+		>
+			Laporan Saya
+		</button>
 	</div>
 
-	<!-- Results count -->
-	<p class="mb-3 text-xs text-muted">
-		{filteredTickets.length} tiket ditemukan
-	</p>
-
-	<!-- Ticket list -->
-	{#if filteredTickets.length === 0}
-		<div class="rounded-xl border border-border bg-surface py-16 text-center">
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				width="32"
-				height="32"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="1.5"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				class="mx-auto mb-3 text-muted/50"
-			>
-				<circle cx="11" cy="11" r="8" />
-				<line x1="21" y1="21" x2="16.65" y2="16.65" />
-			</svg>
-			<p class="text-sm text-muted">Tidak ada tiket yang cocok.</p>
-			<button
-				type="button"
-				onclick={() => { search = ''; filterType = 'all'; filterStatus = 'all'; }}
-				class="mt-2 text-xs text-accent hover:underline"
-			>
-				Reset filter
-			</button>
+	<!-- List -->
+	{#if ticketsQuery.isLoading}		<div class="flex flex-col gap-2">
+			{#each [1, 2, 3, 4, 5] as _}
+				<div class="h-16 animate-pulse rounded-xl bg-surface-2"></div>
+			{/each}
 		</div>
+	{:else if filtered.length === 0}
+		{#if hasActiveFilter}
+			<EmptyState
+				icon="search"
+				title="Tidak ada laporan yang cocok"
+				message="Coba ubah kata kunci atau filter yang digunakan."
+				actionLabel="Reset filter"
+				onAction={resetFilters}
+			/>
+		{:else}
+			<EmptyState
+				icon="inbox"
+				title="Belum ada laporan"
+				message="Laporan yang dibuat akan muncul di sini."
+				actionLabel="Buat laporan baru"
+				actionHref="/report/chat"
+			/>
+		{/if}
 	{:else}
+		<p class="mb-3 text-xs text-muted">{filtered.length} laporan ditemukan</p>
 		<div class="flex flex-col gap-2">
-			{#each filteredTickets as ticket (ticket.id)}
+			{#each filtered as ticket (ticket._id)}
 				<TicketCard
-					id={ticket.id}
+					id={ticket._id}
 					title={ticket.title}
-					type={ticket.type}
-					priority={ticket.priority}
-					date={ticket.date}
+					type={ticket.type as TicketType}
+					priority={(ticket.priority ?? 'low') as 'high' | 'medium' | 'low'}
+					date={relativeDate(ticket.createdAt)}
+					reporterName={ticket.reporterName}
+					trelloCardId={ticket.trelloCardId}
+					trelloCardFound={ticket.trelloCardFound}
+					trelloArchived={ticket.trelloArchived}
+					trelloStatus={ticket.trelloStatus}
+					trelloListIndex={ticket.trelloListIndex}
+					trelloTotalLists={ticket.trelloTotalLists}
 				/>
 			{/each}
 		</div>
+
+		{#if hasMore}
+			<button
+				type="button"
+				onclick={() => (numItems += 15)}
+				class="mt-4 w-full rounded-xl border border-border bg-surface py-3 text-sm text-muted transition-colors hover:border-accent/30 hover:text-accent cursor-pointer"
+			>
+				Muat lebih banyak
+			</button>
+		{/if}
 	{/if}
 </div>
+
