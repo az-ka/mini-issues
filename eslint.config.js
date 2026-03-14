@@ -26,8 +26,14 @@ export default defineConfig(
 			'svelte/no-goto-without-base': 'off',
 			'svelte/no-href-without-base': 'off',
 			// Bug in eslint-plugin-svelte v3 — crashes on <input> elements
-			// https://github.com/sveltejs/eslint-plugin-svelte/issues
-			'svelte/no-navigation-without-resolve': 'off'
+			'svelte/no-navigation-without-resolve': 'off',
+			// Allow _prefix for intentionally unused variables
+			'@typescript-eslint/no-unused-vars': [
+				'error',
+				{ varsIgnorePattern: '^_', argsIgnorePattern: '^_' }
+			],
+			// Svelte 5 $effect reactive tracking pattern: `value;` is intentional to track dependencies
+			'@typescript-eslint/no-unused-expressions': 'off'
 		}
 	},
 	{

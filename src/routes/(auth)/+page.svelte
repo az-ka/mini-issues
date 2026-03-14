@@ -28,7 +28,7 @@
 				redirectUrl: '/sso-callback',
 				redirectUrlComplete: '/dashboard'
 			});
-		} catch (err) {
+		} catch {
 			error = 'Terjadi kesalahan. Coba lagi.';
 			isLoading = false;
 		}

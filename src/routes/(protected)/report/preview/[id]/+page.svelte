@@ -198,7 +198,7 @@
 
 	{#if reportQuery.isLoading}
 		<div class="flex flex-col gap-3 pt-4">
-			{#each [1, 2, 3, 4] as _}
+			{#each [1, 2, 3, 4] as _, i (i)}
 				<div class="h-10 animate-pulse rounded-xl bg-surface-2"></div>
 			{/each}
 		</div>
@@ -230,7 +230,7 @@
 				<div>
 					<p class="mb-1.5 text-sm font-medium text-foreground">Tipe</p>
 					<div class="flex flex-col gap-1.5">
-						{#each typeOptions as opt}
+						{#each typeOptions as opt (opt.value)}
 							<label
 								class="flex cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 text-sm transition-colors {type ===
 								opt.value
@@ -253,7 +253,7 @@
 				<div>
 					<p class="mb-1.5 text-sm font-medium text-foreground">Prioritas</p>
 					<div class="flex flex-col gap-1.5">
-						{#each priorityOptions as opt}
+						{#each priorityOptions as opt (opt.value)}
 							<label
 								class="flex cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 text-sm transition-colors {priority ===
 								opt.value
@@ -356,7 +356,7 @@
 						<div>
 							<p class="mb-1.5 text-sm font-medium text-foreground">Frekuensi</p>
 							<div class="flex flex-wrap gap-2">
-								{#each frequencyOptions as opt}
+								{#each frequencyOptions as opt (opt.value)}
 									<label
 										class="flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-1.5 text-xs transition-colors {frequency ===
 										opt.value
@@ -402,7 +402,7 @@
 							<span class="ml-1 text-xs font-normal text-muted">(tersimpan di Trello)</span>
 						</p>
 						<div class="flex flex-col gap-2">
-							{#each savedAttachments as att}
+							{#each savedAttachments as att (att.url)}
 								<a
 									href={att.url}
 									target="_blank"
@@ -498,7 +498,7 @@
 
 					{#if attachments.length > 0}
 						<div class="mt-3 flex flex-col gap-2">
-							{#each attachments as file, i}
+							{#each attachments as file, i (i)}
 								<div
 									class="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2"
 								>

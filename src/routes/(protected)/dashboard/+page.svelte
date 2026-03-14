@@ -171,7 +171,7 @@
 
 		{#if ticketsQuery.isLoading}
 			<div class="flex flex-col gap-2">
-				{#each [1, 2, 3] as _}
+				{#each [1, 2, 3] as _, i (i)}
 					<div class="h-16 animate-pulse rounded-xl bg-surface-2"></div>
 				{/each}
 			</div>

@@ -49,7 +49,7 @@
 
 	{#if reportQuery.isLoading}
 		<div class="flex flex-col gap-3 pt-4">
-			{#each [1, 2, 3, 4] as _}
+			{#each [1, 2, 3, 4] as _, i (i)}
 				<div class="h-10 animate-pulse rounded-xl bg-surface-2"></div>
 			{/each}
 		</div>
@@ -324,7 +324,7 @@
 						Attachment ({savedAttachments.length})
 					</p>
 					<div class="flex flex-col gap-2">
-						{#each savedAttachments as file}
+						{#each savedAttachments as file (file.url)}
 							<a
 								href={file.url}
 								target="_blank"

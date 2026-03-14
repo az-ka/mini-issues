@@ -71,7 +71,7 @@
 
 	<!-- Filters -->
 	<div class="mb-6 flex flex-wrap items-center gap-2">
-		{#each typeOptions as opt}
+		{#each typeOptions as opt (opt.value)}
 			<button
 				type="button"
 				onclick={() => (filterType = opt.value)}
@@ -101,7 +101,7 @@
 	<!-- List -->
 	{#if ticketsQuery.isLoading}
 		<div class="flex flex-col gap-2">
-			{#each [1, 2, 3, 4, 5] as _}
+			{#each [1, 2, 3, 4, 5] as _, i (i)}
 				<div class="h-16 animate-pulse rounded-xl bg-surface-2"></div>
 			{/each}
 		</div>

@@ -410,10 +410,8 @@
 
 <!-- Confirm reset dialog -->
 <Dialog open={showConfirmReset} title="Mulai sesi baru?" onclose={() => (showConfirmReset = false)}>
-	{#snippet children()}
-		Semua pesan di sesi ini akan dihapus dan kamu akan mulai dari awal. Tindakan ini tidak bisa
-		dibatalkan.
-	{/snippet}
+	Semua pesan di sesi ini akan dihapus dan kamu akan mulai dari awal. Tindakan ini tidak bisa
+	dibatalkan.
 	{#snippet footer()}
 		<Button size="sm" variant="secondary" onclick={() => (showConfirmReset = false)}>Batal</Button>
 		<Button size="sm" variant="danger" onclick={startFresh}>Ya, hapus sesi</Button>

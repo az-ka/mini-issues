@@ -5,7 +5,6 @@
 
 	interface Props {
 		children: import('svelte').Snippet;
-		data: { userId: string };
 	}
 
 	let { children }: Props = $props();
