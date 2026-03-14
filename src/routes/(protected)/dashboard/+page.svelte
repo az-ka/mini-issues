@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { useQuery } from 'convex-svelte';
 	import { useClerkContext } from 'svelte-clerk/client';
-	import { getInitials } from '$lib/utils';
+	import { getInitials, relativeDate } from '$lib/utils';
 	import { api } from '../../../convex/_generated/api';
 	import Button from '$lib/components/ui/Button.svelte';
 	import TicketCard from '$lib/components/TicketCard.svelte';
@@ -26,18 +26,6 @@
 		goto('/');
 	}
 
-	function relativeDate(epochMs: number): string {
-		const diff = Date.now() - epochMs;
-		const mins = Math.floor(diff / 60_000);
-		if (mins < 1) return 'Baru saja';
-		if (mins < 60) return `${mins} menit lalu`;
-		const hours = Math.floor(mins / 60);
-		if (hours < 24) return `${hours} jam lalu`;
-		const days = Math.floor(hours / 24);
-		if (days < 30) return `${days} hari lalu`;
-		const months = Math.floor(days / 30);
-		return `${months} bulan lalu`;
-	}
 </script>
 
 <div class="mx-auto min-h-dvh max-w-2xl px-4 py-8">

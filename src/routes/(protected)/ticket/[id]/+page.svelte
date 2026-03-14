@@ -9,6 +9,7 @@
 	import NotFound from '$lib/components/ui/NotFound.svelte';
 	import { TYPE_COLOR, TYPE_LABEL, PRIORITY_COLOR, PRIORITY_LABEL } from '$lib/constants/ticket';
 	import type { TicketType, Priority } from '$lib/constants/ticket';
+	import { formatDate } from '$lib/utils';
 
 	const reportId = $derived(page.params.id as Id<'reports'>);
 	const reportQuery = useQuery(api.reports.getById, () => ({ id: reportId }));
@@ -31,13 +32,7 @@
 	const trelloDeleted = $derived(report?.trelloCardId && report?.trelloCardFound === false);
 	const trelloArchived = $derived(report?.trelloCardId && report?.trelloArchived === true);
 	const savedAttachments = $derived(parseAttachments(report?.attachmentUrls));
-	const reportDate = $derived(
-		report
-			? new Intl.DateTimeFormat('id-ID', {
-					day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
-				}).format(new Date(report.createdAt))
-			: '—'
-	);
+	const reportDate = $derived(report ? formatDate(report.createdAt) : '—');
 
 	// Background Trello status fetch — fires after report loads, respects cooldown server-side
 	$effect(() => {

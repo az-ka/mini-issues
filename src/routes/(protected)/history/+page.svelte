@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { useQuery } from 'convex-svelte';
 	import { api } from '../../../convex/_generated/api';
+	import { relativeDate } from '$lib/utils';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import TicketCard from '$lib/components/TicketCard.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
@@ -8,7 +9,6 @@
 	type TicketType = 'bug' | 'feature' | 'improvement';
 
 	const ticketsQuery = useQuery(api.reports.listAll, () => ({}));
-
 	const allReports = $derived(ticketsQuery.data?.reports ?? []);
 	const reachedLimit = $derived(ticketsQuery.data?.reachedLimit ?? false);
 
@@ -22,19 +22,6 @@
 		{ value: 'feature', label: 'Feature' },
 		{ value: 'improvement', label: 'Improvement' }
 	];
-
-	function relativeDate(epochMs: number): string {
-		const diff = Date.now() - epochMs;
-		const mins = Math.floor(diff / 60_000);
-		if (mins < 1) return 'Baru saja';
-		if (mins < 60) return `${mins} menit lalu`;
-		const hours = Math.floor(mins / 60);
-		if (hours < 24) return `${hours} jam lalu`;
-		const days = Math.floor(hours / 24);
-		if (days < 30) return `${days} hari lalu`;
-		const months = Math.floor(days / 30);
-		return `${months} bulan lalu`;
-	}
 
 	const filtered = $derived(
 		allReports.filter((t) => {
