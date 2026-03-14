@@ -73,9 +73,6 @@ Git hooks (via [Lefthook](https://github.com/evilmartians/lefthook)):
 ### Vercel (Recommended)
 
 1. Connect your GitHub repo to [Vercel](https://vercel.com)
-2. Set **Build Command** to:
-   ```sh
-   npx convex deploy --cmd 'vite build'
-   ```
+2. Set **Build Command** to: `bun run build` (or leave as default — Vercel auto-detects Bun)
 3. Add all environment variables from `.env.example` in the Vercel dashboard, including `CONVEX_DEPLOY_KEY` (from Convex Dashboard → Settings → Deploy Key)
 4. Push to `main` — Vercel will auto-deploy both Convex functions and the SvelteKit app
