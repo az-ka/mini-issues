@@ -15,21 +15,22 @@
 		ctx.user?.primaryEmailAddress?.emailAddress?.toLowerCase().trim() ?? null
 	);
 
-	// Query whitelist+admin status in one call (isCurrentUserAllowed covers both)
-	const accessCheck = $derived(
-		userEmail !== null ? useQuery(api.whitelist.isCurrentUserAllowed, {}) : null
+	// Always run — Convex returns false internally if not authenticated
+	const accessCheck = useQuery(api.whitelist.isCurrentUserAllowed, {});
+
+	const isAllowed = $derived(accessCheck.data === true);
+
+	const isChecking = $derived(
+		ctx.user === undefined || (userEmail !== null && accessCheck.isLoading === true)
 	);
-
-	const isAllowed = $derived(accessCheck?.data === true);
-
-	const isChecking = $derived(ctx.user === undefined || accessCheck?.isLoading === true);
 
 	const isDenied = $derived(
 		!isChecking &&
 			ctx.user !== null &&
 			ctx.user !== undefined &&
+			userEmail !== null &&
 			!isAllowed &&
-			accessCheck?.isLoading === false
+			accessCheck.isLoading === false
 	);
 
 	$effect(() => {

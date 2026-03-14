@@ -60,5 +60,13 @@ export default defineSchema({
 		isChatDone: v.boolean(),
 		reportId: v.optional(v.string()),
 		updatedAt: v.number()
-	}).index('by_clerk_id', ['clerkId'])
+	}).index('by_clerk_id', ['clerkId']),
+
+	// Trello board configurations managed by admin
+	trelloBoards: defineTable({
+		name: v.string(), // Display name, e.g. "FE", "BE"
+		boardId: v.string(), // Trello board ID (from board URL)
+		listId: v.string(), // Target list ID on that board
+		isActive: v.boolean() // Only active boards shown to users
+	})
 });

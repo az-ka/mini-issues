@@ -1,3 +1,15 @@
+import { ConvexError } from 'convex/values';
+
+/**
+ * Extracts a human-readable error message from a Convex or generic error.
+ */
+export function extractError(err: unknown, fallback: string): string {
+	if (err instanceof ConvexError) {
+		return typeof err.data === 'string' ? err.data : fallback;
+	}
+	return err instanceof Error ? err.message : fallback;
+}
+
 /**
  * Returns up to 2 uppercase initials from a name.
  * "Azka" → "A", "Az Ka" → "AK", "Az Ka Dio" → "AK"

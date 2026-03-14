@@ -32,16 +32,6 @@
 
 	const ctx = useClerkContext();
 	const client = useConvexClient();
-	const savedSession = useQuery(api.chatSessions.getSession, () => ({}));
-	const currentReport = useQuery(api.reports.getById, () =>
-		reportId ? { id: reportId as Id<'reports'> } : 'skip'
-	);
-
-	const userInitials = $derived(getInitials(ctx.clerk?.user?.fullName));
-	const userAvatar = $derived(ctx.clerk?.user?.imageUrl);
-
-	// True when chat is done but draft hasn't been sent to Trello yet
-	const isDraftUnsent = $derived(isChatDone && !!reportId && !currentReport.data?.trelloCardId);
 
 	const OPENER: Message = {
 		id: 1,
@@ -58,6 +48,17 @@
 	let nextId = $state(2);
 	let sessionRestored = $state(false);
 	let showConfirmReset = $state(false);
+
+	const savedSession = useQuery(api.chatSessions.getSession, () => ({}));
+	const currentReport = useQuery(api.reports.getById, () =>
+		reportId ? { id: reportId as Id<'reports'> } : 'skip'
+	);
+
+	const userInitials = $derived(getInitials(ctx.clerk?.user?.fullName));
+	const userAvatar = $derived(ctx.clerk?.user?.imageUrl);
+
+	// True when chat is done but draft hasn't been sent to Trello yet
+	const isDraftUnsent = $derived(isChatDone && !!reportId && !currentReport.data?.trelloCardId);
 
 	// Restore session from Convex once it loads
 	$effect(() => {
@@ -419,15 +420,6 @@
 	{/if}
 	{#snippet footer()}
 		<Button size="sm" variant="secondary" onclick={() => (showConfirmReset = false)}>Batal</Button>
-		{#if isDraftUnsent}
-			<Button
-				size="sm"
-				href="/report/preview/{reportId}"
-				onclick={() => (showConfirmReset = false)}
-			>
-				Kirim Dulu
-			</Button>
-		{/if}
 		<Button size="sm" variant="danger" onclick={startFresh}>Ya, Mulai Baru</Button>
 	{/snippet}
 </Dialog>

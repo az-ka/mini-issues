@@ -19,6 +19,8 @@
 
 	const reportId = $derived(page.params.id as Id<'reports'>);
 	const reportQuery = useQuery(api.reports.getDraft, () => ({ id: reportId }));
+	const boardsQuery = useQuery(api.trelloBoards.listActive, () => ({}));
+	const activeBoards = $derived(boardsQuery.data ?? []);
 
 	const ctx = useClerkContext();
 	const reporterName = $derived(ctx.clerk?.user?.fullName ?? ctx.clerk?.user?.firstName ?? 'Kamu');
@@ -47,6 +49,7 @@
 	let previewFile = $state<File | null>(null);
 	let previewUrl = $state('');
 	let isSending = $state(false);
+	let selectedBoardId = $state(''); // selected trelloBoards._id
 
 	// Derived from Convex — already sent if trelloCardId exists
 	const alreadySent = $derived(!!reportQuery.data?.trelloCardId);
@@ -153,6 +156,18 @@
 		if (e.dataTransfer?.files) addFiles(Array.from(e.dataTransfer.files));
 	}
 
+	// Auto-select first active board when boards load
+	$effect(() => {
+		if (activeBoards.length > 0 && !selectedBoardId) {
+			selectedBoardId = activeBoards[0]._id;
+		}
+	});
+
+	// Derived: the list ID for the selected board (fallback to empty = API uses env var)
+	const selectedListId = $derived(
+		activeBoards.find((b) => b._id === selectedBoardId)?.listId ?? ''
+	);
+
 	async function sendToTrello() {
 		if (isSending || alreadySent) return;
 		isSending = true;
@@ -171,6 +186,7 @@
 			form.append('frequency', frequency);
 			form.append('businessImpact', impact);
 			form.append('reporterName', reporterName);
+			if (selectedListId) form.append('listId', selectedListId);
 
 			for (const file of attachments) {
 				form.append('attachments', file, file.name);
@@ -611,6 +627,24 @@
 
 			<!-- Actions -->
 			<div class="flex flex-col gap-3 pt-2 pb-8">
+				<!-- Board selector — only show if there are configured boards -->
+				{#if !alreadySent && activeBoards.length > 0}
+					<div>
+						<label for="board-select" class="mb-1.5 block text-xs font-medium text-muted"
+							>Kirim ke Board</label
+						>
+						<select
+							id="board-select"
+							bind:value={selectedBoardId}
+							class="w-full rounded-xl border border-border bg-surface-2 px-4 py-2.5 text-sm text-foreground transition-colors focus:border-accent/50 focus:ring-2 focus:ring-accent/15 focus:outline-none"
+						>
+							{#each activeBoards as board (board._id)}
+								<option value={board._id}>{board.name}</option>
+							{/each}
+						</select>
+					</div>
+				{/if}
+
 				<Button size="lg" class="w-full" onclick={sendToTrello} disabled={isSending || alreadySent}>
 					{#if isSending}
 						<div

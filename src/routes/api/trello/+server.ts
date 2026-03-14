@@ -40,6 +40,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	const reportId = formData.get('reportId') as string;
 	const title = formData.get('title') as string;
 	const files = formData.getAll('attachments') as File[];
+	const listId = (formData.get('listId') as string | null) || TRELLO_LIST_ID;
 
 	if (!reportId || !title) error(400, 'reportId and title are required');
 
@@ -56,7 +57,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
 		body: JSON.stringify({
-			idList: TRELLO_LIST_ID,
+			idList: listId,
 			name: title,
 			desc: buildCardDescription(fields)
 		})
