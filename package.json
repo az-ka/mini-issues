@@ -48,6 +48,7 @@
 		"@google/genai": "^1.45.0",
 		"convex": "^1.32.0",
 		"convex-svelte": "^0.0.12",
+		"groq-sdk": "^1.1.1",
 		"svelte-clerk": "^1.0.1",
 		"svelte-sonner": "^1.1.0"
 	}
