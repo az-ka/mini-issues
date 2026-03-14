@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
 
 	interface Props {
 		title: string;
@@ -13,7 +12,7 @@
 	let { title, backHref, backLabel = 'Kembali', right }: Props = $props();
 
 	function goBack() {
-		if (history.length > 1 && document.referrer.startsWith(page.url.origin)) {
+		if (history.length > 1) {
 			history.back();
 		} else {
 			goto(backHref ?? '/');
