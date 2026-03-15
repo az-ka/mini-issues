@@ -17,7 +17,6 @@ Internal ticketing tool for non-technical teams. Describe a bug or feature reque
 - [Clerk](https://clerk.com) — Authentication (Google OAuth)
 - [Tailwind CSS v4](https://tailwindcss.com) — Styling
 - [Google Gemini](https://ai.google.dev) — AI chat for ticket structuring
-- [Groq](https://groq.com) — AI fallback when Gemini hits rate limits (optional)
 - [Trello API](https://developer.atlassian.com/cloud/trello/) — Card creation
 
 ## Getting Started

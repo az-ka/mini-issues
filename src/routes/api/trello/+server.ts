@@ -1,8 +1,7 @@
 import { json, error } from '@sveltejs/kit';
-import { GoogleGenAI } from '@google/genai';
-import Groq from 'groq-sdk';
-import { TRELLO_API_KEY, TRELLO_TOKEN, TRELLO_LIST_ID, GEMINI_API_KEY } from '$env/static/private';
+import { TRELLO_API_KEY, TRELLO_TOKEN } from '$env/static/private';
 import { env } from '$env/dynamic/private';
+import { generateText } from '$lib/server/ai';
 import { ConvexHttpClient } from 'convex/browser';
 import { PUBLIC_CONVEX_URL } from '$env/static/public';
 import { api } from '$convex/api';
@@ -12,7 +11,7 @@ import type { Id } from '$convex/dataModel';
 const TRELLO_BASE = 'https://api.trello.com/1';
 
 // Lightweight/fast models preferred for board selection (single-token response)
-const GEMINI_MODELS = [
+const SELECT_BOARD_MODELS = [
 	'gemini-2.5-flash-lite',
 	'gemini-3.1-flash-lite',
 	'gemma-3-4b-it',
@@ -76,45 +75,20 @@ ${boardList}
 
 Respond with ONLY the index number (0 to ${boards.length - 1}) of the best matching board. No explanation, just the number.`;
 
-	// Try Gemini (fast/cheap models)
-	const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-	for (const model of GEMINI_MODELS) {
-		try {
-			const result = await ai.models.generateContent({ model, contents: prompt });
-			const idx = parseInt((result.text ?? '').trim());
-			if (!isNaN(idx) && idx >= 0 && idx < boards.length) {
-				console.log(`[selectBoard] AI (${model}) → board ${idx}: "${boards[idx].name}"`);
-				return boards[idx];
-			}
-		} catch (err) {
-			const status = (err as { status?: number })?.status;
-			if (status === 429 || status === 503) continue;
-			break;
+	try {
+		const text = await generateText(prompt, SELECT_BOARD_MODELS, {
+			temperature: 0,
+			maxOutputTokens: 5
+		});
+		const idx = parseInt(text.trim());
+		if (!isNaN(idx) && idx >= 0 && idx < boards.length) {
+			console.log(`[selectBoard] AI → board ${idx}: "${boards[idx].name}"`);
+			return boards[idx];
 		}
+	} catch (err) {
+		console.warn('[selectBoard] AI failed, falling back to first active board:', err);
 	}
 
-	// Groq fallback
-	const groqKey = env.GROQ_API_KEY;
-	if (groqKey) {
-		try {
-			const groq = new Groq({ apiKey: groqKey });
-			const res = await groq.chat.completions.create({
-				model: 'llama-3.1-8b-instant',
-				messages: [{ role: 'user', content: prompt }],
-				temperature: 0,
-				max_tokens: 5
-			});
-			const idx = parseInt((res.choices[0].message.content ?? '').trim());
-			if (!isNaN(idx) && idx >= 0 && idx < boards.length) {
-				console.log(`[selectBoard] Groq → board ${idx}: "${boards[idx].name}"`);
-				return boards[idx];
-			}
-		} catch {
-			/* fall through */
-		}
-	}
-
-	console.warn('[selectBoard] AI failed, falling back to first active board');
 	return boards[0];
 }
 
@@ -144,18 +118,31 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		}
 	}
 
-	// Step 1: Get auth token + Convex client (needed for board selection and saving)
+	// Step 1: Get auth token + Convex client
+	console.log('[/api/trello] Step 1: getting Convex token...');
 	const token = await getToken({ template: 'convex' });
-	if (!token) error(401, 'Gagal mendapatkan token autentikasi.');
+	if (!token) {
+		console.error('[/api/trello] Step 1: token not available');
+		error(401, 'Gagal mendapatkan token autentikasi.');
+	}
+	console.log('[/api/trello] Step 1: OK');
 
 	const convex = new ConvexHttpClient(PUBLIC_CONVEX_URL);
 	convex.setAuth(token);
 
 	// Step 2: Fetch active boards and let AI pick the best one
-	const activeBoards = (await convex.query(api.trelloBoards.listActive, {})) as ActiveBoard[];
+	console.log('[/api/trello] Step 2: fetching active boards...');
+	let activeBoards: ActiveBoard[] = [];
+	try {
+		activeBoards = (await convex.query(api.trelloBoards.listActive, {})) as ActiveBoard[];
+		console.log(`[/api/trello] Step 2: ${activeBoards.length} active board(s) found`);
+	} catch (err) {
+		console.error('[/api/trello] Step 2: failed to fetch boards from Convex:', err);
+		// Non-fatal — continue, will use TRELLO_LIST_ID env fallback
+	}
 
 	let selectedBoard: ActiveBoard | null = null;
-	let listId = TRELLO_LIST_ID; // fallback to env var if no boards configured
+	let listId = env.TRELLO_LIST_ID ?? '';
 
 	if (activeBoards.length > 0) {
 		selectedBoard = await selectBoard(activeBoards, {
@@ -166,9 +153,20 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			description: fields.description as string | undefined
 		});
 		listId = selectedBoard.listId;
+		console.log(`[/api/trello] Step 2: selected board "${selectedBoard.name}" → listId ${listId}`);
+	} else {
+		console.warn('[/api/trello] Step 2: no active boards, using TRELLO_LIST_ID fallback');
+	}
+
+	if (!listId) {
+		console.error(
+			'[/api/trello] Step 2: no listId available — configure a board in admin or set TRELLO_LIST_ID'
+		);
+		error(400, 'Tidak ada board Trello yang aktif. Silakan tambahkan board di halaman admin.');
 	}
 
 	// Step 3: Create Trello card
+	console.log(`[/api/trello] Step 3: creating card in list ${listId}...`);
 	const cardRes = await fetch(`${TRELLO_BASE}/cards?key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
