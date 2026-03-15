@@ -369,15 +369,15 @@
 					disabled={isLoading || isChatDone}
 					class="max-h-[120px] flex-1 resize-none overflow-y-auto rounded-xl border border-border bg-surface-2 px-4 py-3 text-sm text-foreground transition-colors placeholder:text-muted/60 focus:border-accent/50 focus:ring-2 focus:ring-accent/15 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 				></textarea>
-				<button
+				<Button
 					type="button"
-					aria-label="Kirim pesan"
 					onclick={sendMessage}
-					disabled={!inputValue.trim() || isLoading || isChatDone}
-					class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent text-bg transition-all hover:bg-accent/85 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+					loading={isLoading}
+					disabled={!inputValue.trim() || isChatDone}
+					class="h-11 w-11 shrink-0 rounded-xl p-0"
 				>
 					<Send size={18} />
-				</button>
+				</Button>
 			</div>
 			<p class="mt-2 text-center text-xs text-muted/60">
 				Tulis dengan bebas — AI yang akan merapikannya jadi tiket.

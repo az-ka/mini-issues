@@ -44,7 +44,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	try {
 		const text = await generateChatResponse(history, lastMessage.text, GEMINI_MODELS, {
 			systemInstruction: SYSTEM_PROMPT,
-			temperature: 0.7,
+			temperature: 0.4,
 			maxOutputTokens: 1024
 		});
 		return json({ text });
