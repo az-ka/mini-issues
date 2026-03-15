@@ -12,6 +12,15 @@
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import NotFound from '$lib/components/ui/NotFound.svelte';
+	import {
+		FileText,
+		ExternalLink,
+		Upload,
+		Play,
+		X,
+		TriangleAlert,
+		CircleCheckBig
+	} from 'lucide-svelte';
 
 	type TicketType = 'bug' | 'feature' | 'improvement';
 	type Priority = 'high' | 'medium' | 'low';
@@ -411,38 +420,9 @@
 									rel="noopener noreferrer"
 									class="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2 transition-colors hover:border-accent/40"
 								>
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="14"
-										height="14"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										stroke-width="2"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										class="shrink-0 text-muted"
-									>
-										<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-										<polyline points="14 2 14 8 20 8" />
-									</svg>
+									<FileText size={14} class="shrink-0 text-muted" />
 									<span class="min-w-0 flex-1 truncate text-xs text-foreground">{att.name}</span>
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="12"
-										height="12"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										stroke-width="2"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										class="shrink-0 text-muted"
-									>
-										<path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline
-											points="15 3 21 3 21 9"
-										/><line x1="10" y1="14" x2="21" y2="3" />
-									</svg>
+									<ExternalLink size={12} class="shrink-0 text-muted" />
 								</a>
 							{/each}
 						</div>
@@ -467,22 +447,7 @@
 						ondrop={handleDrop}
 						onclick={() => document.getElementById('file-input')?.click()}
 					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="24"
-							height="24"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="1.5"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							class="mx-auto mb-2 text-muted"
-						>
-							<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-							<polyline points="17 8 12 3 7 8" />
-							<line x1="12" y1="3" x2="12" y2="15" />
-						</svg>
+						<Upload size={24} class="mx-auto mb-2 text-muted" />
 						<p class="text-sm text-muted">
 							Drag & drop atau <span class="text-accent">pilih file</span>
 						</p>
@@ -520,36 +485,13 @@
 											<div
 												class="flex h-9 w-9 items-center justify-center rounded bg-surface-2 text-muted ring-1 ring-border"
 											>
-												<svg
-													xmlns="http://www.w3.org/2000/svg"
-													width="16"
-													height="16"
-													viewBox="0 0 24 24"
-													fill="none"
-													stroke="currentColor"
-													stroke-width="2"
-													stroke-linecap="round"
-													stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3" /></svg
-												>
+												<Play size={16} />
 											</div>
 										{:else}
 											<div
 												class="flex h-9 w-9 items-center justify-center rounded bg-surface-2 text-muted ring-1 ring-border"
 											>
-												<svg
-													xmlns="http://www.w3.org/2000/svg"
-													width="14"
-													height="14"
-													viewBox="0 0 24 24"
-													fill="none"
-													stroke="currentColor"
-													stroke-width="2"
-													stroke-linecap="round"
-													stroke-linejoin="round"
-													><path
-														d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
-													/><polyline points="14 2 14 8 20 8" /></svg
-												>
+												<FileText size={14} />
 											</div>
 										{/if}
 									</button>
@@ -572,23 +514,7 @@
 										onclick={() => removeAttachment(i)}
 										class="shrink-0 cursor-pointer rounded p-0.5 text-muted transition-colors hover:text-danger"
 									>
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											width="14"
-											height="14"
-											viewBox="0 0 24 24"
-											fill="none"
-											stroke="currentColor"
-											stroke-width="2"
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											><line x1="18" y1="6" x2="6" y2="18" /><line
-												x1="6"
-												y1="6"
-												x2="18"
-												y2="18"
-											/></svg
-										>
+										<X size={14} />
 									</button>
 								</div>
 							{/each}
@@ -618,24 +544,7 @@
 					<div
 						class="flex items-start gap-2.5 rounded-xl border border-warning/30 bg-warning/5 px-4 py-3"
 					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="14"
-							height="14"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							class="mt-0.5 shrink-0 text-warning"
-						>
-							<path
-								d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
-							/>
-							<line x1="12" y1="9" x2="12" y2="13" />
-							<line x1="12" y1="17" x2="12.01" y2="17" />
-						</svg>
+						<TriangleAlert size={14} class="mt-0.5 shrink-0 text-warning" />
 						<p class="text-xs leading-relaxed text-warning">
 							Belum ada board Trello yang aktif. Hubungi admin untuk mengkonfigurasi board terlebih
 							dahulu.
@@ -648,31 +557,11 @@
 						size="lg"
 						class="w-full"
 						onclick={sendToTrello}
-						disabled={isSending || alreadySent}
+						disabled={alreadySent}
+						loading={isSending}
 					>
-						{#if isSending}
-							<div
-								class="h-4 w-4 animate-spin rounded-full border-2 border-bg border-t-transparent"
-							></div>
-							Mengirim...
-						{:else}
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							>
-								<path d="M22 11.08V12a10 10 0 11-5.93-9.14" /><polyline
-									points="22 4 12 14.01 9 11.01"
-								/>
-							</svg>
-							Kirim ke Trello
-						{/if}
+						<CircleCheckBig />
+						Kirim ke Trello
 					</Button>
 				{/if}
 				<a
@@ -724,19 +613,7 @@
 					class="ml-3 shrink-0 cursor-pointer rounded-lg p-1.5 text-muted transition-colors hover:bg-surface-2 hover:text-foreground"
 					aria-label="Tutup"
 				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="16"
-						height="16"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					>
-						<line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-					</svg>
+					<X size={16} />
 				</button>
 			</div>
 

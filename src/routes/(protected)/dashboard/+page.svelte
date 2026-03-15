@@ -7,6 +7,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import TicketCard from '$lib/components/TicketCard.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
+	import { ShieldCheck, LogOut, Plus } from 'lucide-svelte';
 
 	const ctx = useClerkContext();
 	const ticketsQuery = useQuery(api.reports.listRecent, () => ({}));
@@ -34,20 +35,7 @@
 			<div
 				class="flex h-8 w-8 items-center justify-center rounded-lg border border-accent/20 bg-accent/10"
 			>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					width="16"
-					height="16"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					class="text-accent"
-				>
-					<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-				</svg>
+				<ShieldCheck size={16} class="text-accent" />
 			</div>
 			<span class="text-sm font-semibold text-foreground">Mini Issues</span>
 		</div>
@@ -112,21 +100,7 @@
 							onclick={handleSignOut}
 							class="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-danger transition-colors hover:bg-danger/10"
 						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="15"
-								height="15"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							>
-								<path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
-								<polyline points="16 17 21 12 16 7" />
-								<line x1="21" y1="12" x2="9" y2="12" />
-							</svg>
+							<LogOut size={15} />
 							Keluar
 						</button>
 					</div>
@@ -142,20 +116,7 @@
 			AI akan membantu kamu menyusun laporan yang lengkap dalam beberapa menit.
 		</p>
 		<Button size="lg" href="/report/chat">
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				width="16"
-				height="16"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="2"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-			>
-				<line x1="12" y1="5" x2="12" y2="19" />
-				<line x1="5" y1="12" x2="19" y2="12" />
-			</svg>
+			<Plus />
 			Buat Laporan Baru
 		</Button>
 	</div>

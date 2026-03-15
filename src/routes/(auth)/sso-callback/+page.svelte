@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { useClerkContext } from 'svelte-clerk/client';
+	import { LoaderCircle } from 'lucide-svelte';
 
 	const ctx = useClerkContext();
 
@@ -43,20 +44,7 @@
 		<div
 			class="flex h-12 w-12 items-center justify-center rounded-2xl border border-accent/20 bg-accent/10"
 		>
-			<svg
-				class="animate-spin text-accent"
-				xmlns="http://www.w3.org/2000/svg"
-				width="22"
-				height="22"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="2"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-			>
-				<path d="M21 12a9 9 0 11-6.219-8.56" />
-			</svg>
+			<LoaderCircle size={24} class="animate-spin text-accent" />
 		</div>
 		<div class="text-center">
 			<p class="text-sm font-medium text-foreground">Menyelesaikan verifikasi...</p>

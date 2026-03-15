@@ -163,24 +163,6 @@
 		{#if oncancel}
 			<Button variant="secondary" onclick={oncancel}>Batal</Button>
 		{/if}
-		<Button disabled={!isValid || isLoading} onclick={onsubmit}>
-			{#if isLoading}
-				<svg
-					class="animate-spin"
-					xmlns="http://www.w3.org/2000/svg"
-					width="14"
-					height="14"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"><path d="M21 12a9 9 0 11-6.219-8.56" /></svg
-				>
-				Menyimpan...
-			{:else}
-				{submitLabel}
-			{/if}
-		</Button>
+		<Button disabled={!isValid} loading={isLoading} onclick={onsubmit}>{submitLabel}</Button>
 	</div>
 </div>

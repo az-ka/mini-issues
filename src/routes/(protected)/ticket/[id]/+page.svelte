@@ -11,6 +11,17 @@
 	import { TYPE_COLOR, TYPE_LABEL, PRIORITY_COLOR, PRIORITY_LABEL } from '$lib/constants/ticket';
 	import type { TicketType, Priority } from '$lib/constants/ticket';
 	import { formatDate } from '$lib/utils';
+	import {
+		TriangleAlert,
+		Archive,
+		Clock,
+		User,
+		LayoutGrid,
+		ExternalLink,
+		ChevronRight,
+		FileText,
+		Lock
+	} from 'lucide-svelte';
 
 	const reportId = $derived(page.params.id as Id<'reports'>);
 	const reportQuery = useQuery(api.reports.getById, () => ({ id: reportId }));
@@ -62,24 +73,7 @@
 			<div
 				class="mb-4 flex items-start gap-2.5 rounded-xl border border-danger/30 bg-danger/10 px-4 py-3"
 			>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					width="14"
-					height="14"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					class="mt-0.5 shrink-0 text-danger"
-				>
-					<path
-						d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
-					/>
-					<line x1="12" y1="9" x2="12" y2="13" />
-					<line x1="12" y1="17" x2="12.01" y2="17" />
-				</svg>
+				<TriangleAlert size={14} class="mt-0.5 shrink-0 text-danger" />
 				<p class="text-xs leading-relaxed text-danger">
 					Card Trello untuk tiket ini telah dihapus. Data tiket tetap tersimpan di sini.
 				</p>
@@ -89,22 +83,7 @@
 			<div
 				class="mb-4 flex items-start gap-2.5 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3"
 			>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					width="14"
-					height="14"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					class="mt-0.5 shrink-0 text-warning"
-				>
-					<path d="M21 8v13H3V8" />
-					<path d="M1 3h22v5H1z" />
-					<line x1="10" y1="12" x2="14" y2="12" />
-				</svg>
+				<Archive size={14} class="mt-0.5 shrink-0 text-warning" />
 				<p class="text-xs leading-relaxed text-warning">
 					Card Trello untuk tiket ini telah diarsipkan. Data tiket tetap tersimpan di sini.
 				</p>
@@ -117,21 +96,7 @@
 				class="mb-4 flex items-center justify-between gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3"
 			>
 				<div class="flex items-center gap-2.5">
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="14"
-						height="14"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						class="shrink-0 text-warning"
-					>
-						<circle cx="12" cy="12" r="10" />
-						<polyline points="12 6 12 12 16 14" />
-					</svg>
+					<Clock size={14} class="shrink-0 text-warning" />
 					<p class="text-xs text-warning">Tiket ini belum dikirim ke Trello.</p>
 				</div>
 				<Button href="/report/preview/{report._id}" size="sm">Kirim Sekarang</Button>
@@ -172,56 +137,16 @@
 			<!-- Meta -->
 			<div class="flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-muted">
 				<div class="flex items-center gap-1.5">
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="12"
-						height="12"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					>
-						<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-						<circle cx="12" cy="7" r="4" />
-					</svg>
+					<User size={12} />
 					{reporterName}
 				</div>
 				<div class="flex items-center gap-1.5">
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="12"
-						height="12"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					>
-						<circle cx="12" cy="12" r="10" />
-						<polyline points="12 6 12 12 16 14" />
-					</svg>
+					<Clock size={12} />
 					{reportDate}
 				</div>
 				{#if report.module}
 					<div class="flex items-center gap-1.5">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="12"
-							height="12"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						>
-							<rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-							<line x1="3" y1="9" x2="21" y2="9" />
-							<line x1="9" y1="21" x2="9" y2="3" />
-						</svg>
+						<LayoutGrid size={12} />
 						{report.module}
 					</div>
 				{/if}
@@ -234,23 +159,7 @@
 				<!-- Board info (top) -->
 				{#if report.trelloBoardLabel}
 					<div class="flex items-center gap-2.5 px-4 py-3">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="14"
-							height="14"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							class="shrink-0 text-accent"
-						>
-							<rect x="3" y="3" width="7" height="7" />
-							<rect x="14" y="3" width="7" height="7" />
-							<rect x="14" y="14" width="7" height="7" />
-							<rect x="3" y="14" width="7" height="7" />
-						</svg>
+						<LayoutGrid size={14} class="shrink-0 text-accent" />
 						<div class="min-w-0">
 							<p class="text-sm font-medium text-foreground">{report.trelloBoardLabel}</p>
 							{#if report.trelloBoardName || report.trelloListName}
@@ -274,38 +183,10 @@
 						class="flex items-center justify-between rounded-b-xl px-4 py-3 transition-colors hover:bg-surface-2"
 					>
 						<div class="flex items-center gap-2.5 text-sm text-foreground">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="15"
-								height="15"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								class="text-accent"
-							>
-								<path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
-								<polyline points="15 3 21 3 21 9" />
-								<line x1="10" y1="14" x2="21" y2="3" />
-							</svg>
+							<ExternalLink size={15} class="text-accent" />
 							Buka card di Trello
 						</div>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="14"
-							height="14"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							class="text-muted"
-						>
-							<path d="M9 18l6-6-6-6" />
-						</svg>
+						<ChevronRight size={14} class="text-muted" />
 					</a>
 				{/if}
 			</div>
@@ -400,38 +281,9 @@
 								rel="noopener noreferrer"
 								class="flex items-center gap-3 rounded-lg border border-border bg-surface-2 px-3 py-2 transition-colors hover:border-accent/30 hover:bg-surface"
 							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="14"
-									height="14"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									class="shrink-0 text-muted"
-								>
-									<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-									<polyline points="14 2 14 8 20 8" />
-								</svg>
+								<FileText size={14} class="shrink-0 text-muted" />
 								<span class="min-w-0 flex-1 truncate text-xs text-foreground">{file.name}</span>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="12"
-									height="12"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									class="shrink-0 text-muted"
-								>
-									<path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
-									<polyline points="15 3 21 3 21 9" />
-									<line x1="10" y1="14" x2="21" y2="3" />
-								</svg>
+								<ExternalLink size={12} class="shrink-0 text-muted" />
 							</a>
 						{/each}
 					</div>
@@ -441,21 +293,7 @@
 			<!-- Read-only notice — only shown after ticket is sent to Trello -->
 			{#if report.status !== 'draft'}
 				<div class="flex items-start gap-2.5 rounded-xl border border-border bg-surface px-4 py-3">
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="14"
-						height="14"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						class="mt-0.5 shrink-0 text-muted"
-					>
-						<rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-						<path d="M7 11V7a5 5 0 0110 0v4" />
-					</svg>
+					<Lock size={14} class="mt-0.5 shrink-0 text-muted" />
 					<p class="text-xs leading-relaxed text-muted">
 						Tiket ini sudah dikirim dan tidak dapat diedit. Jika ada perubahan, silakan hubungi
 						developer langsung melalui Whatsapp.

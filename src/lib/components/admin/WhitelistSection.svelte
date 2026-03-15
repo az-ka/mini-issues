@@ -4,6 +4,7 @@
 	import { extractError } from '$lib/utils';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
+	import { Plus, Search, Trash2, CircleAlert, X, Info } from 'lucide-svelte';
 
 	const client = useConvexClient();
 	const whitelistQuery = useQuery(api.whitelist.list, {});
@@ -97,40 +98,9 @@
 		{/if}
 
 		<div class="flex justify-end">
-			<Button disabled={!isFormValid || isAdding} onclick={handleAdd}>
-				{#if isAdding}
-					<svg
-						class="animate-spin"
-						xmlns="http://www.w3.org/2000/svg"
-						width="14"
-						height="14"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					>
-						<path d="M21 12a9 9 0 11-6.219-8.56" />
-					</svg>
-					Menambahkan...
-				{:else}
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="14"
-						height="14"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					>
-						<line x1="12" y1="5" x2="12" y2="19" />
-						<line x1="5" y1="12" x2="19" y2="12" />
-					</svg>
-					Tambah Email
-				{/if}
+			<Button disabled={!isFormValid} loading={isAdding} onclick={handleAdd}>
+				<Plus />
+				Tambah Email
 			</Button>
 		</div>
 	</div>
@@ -138,21 +108,7 @@
 
 <!-- Search -->
 <div class="relative mb-4">
-	<svg
-		xmlns="http://www.w3.org/2000/svg"
-		width="15"
-		height="15"
-		viewBox="0 0 24 24"
-		fill="none"
-		stroke="currentColor"
-		stroke-width="2"
-		stroke-linecap="round"
-		stroke-linejoin="round"
-		class="absolute top-1/2 left-3.5 -translate-y-1/2 text-muted"
-	>
-		<circle cx="11" cy="11" r="8" />
-		<line x1="21" y1="21" x2="16.65" y2="16.65" />
-	</svg>
+	<Search size={15} class="absolute top-1/2 left-3.5 -translate-y-1/2 text-muted" />
 	<input
 		type="text"
 		bind:value={search}
@@ -226,23 +182,7 @@
 						aria-label="Hapus {entry.name}"
 						class="rounded p-1.5 text-muted transition-colors hover:bg-danger/10 hover:text-danger"
 					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="15"
-							height="15"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						>
-							<polyline points="3 6 5 6 21 6" />
-							<path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
-							<path d="M10 11v6" />
-							<path d="M14 11v6" />
-							<path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
-						</svg>
+						<Trash2 size={15} />
 					</button>
 				{/if}
 			</div>
@@ -259,22 +199,7 @@
 	<div
 		class="mt-4 flex items-start gap-2.5 rounded-xl border border-danger/20 bg-danger/5 px-4 py-3"
 	>
-		<svg
-			xmlns="http://www.w3.org/2000/svg"
-			width="14"
-			height="14"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			stroke-width="2"
-			stroke-linecap="round"
-			stroke-linejoin="round"
-			class="mt-0.5 shrink-0 text-danger"
-		>
-			<circle cx="12" cy="12" r="10" />
-			<line x1="12" y1="8" x2="12" y2="12" />
-			<line x1="12" y1="16" x2="12.01" y2="16" />
-		</svg>
+		<CircleAlert size={14} class="mt-0.5 shrink-0 text-danger" />
 		<p class="flex-1 text-xs leading-relaxed text-danger/90">{deleteError}</p>
 		<button
 			type="button"
@@ -282,42 +207,14 @@
 			class="shrink-0 text-danger/60 hover:text-danger"
 			aria-label="Tutup"
 		>
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				width="13"
-				height="13"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="2"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-			>
-				<line x1="18" y1="6" x2="6" y2="18" />
-				<line x1="6" y1="6" x2="18" y2="18" />
-			</svg>
+			<X size={13} />
 		</button>
 	</div>
 {/if}
 
 <!-- Info note -->
 <div class="mt-6 flex items-start gap-2.5 rounded-xl border border-border bg-surface px-4 py-3">
-	<svg
-		xmlns="http://www.w3.org/2000/svg"
-		width="14"
-		height="14"
-		viewBox="0 0 24 24"
-		fill="none"
-		stroke="currentColor"
-		stroke-width="2"
-		stroke-linecap="round"
-		stroke-linejoin="round"
-		class="mt-0.5 shrink-0 text-muted"
-	>
-		<circle cx="12" cy="12" r="10" />
-		<line x1="12" y1="8" x2="12" y2="12" />
-		<line x1="12" y1="16" x2="12.01" y2="16" />
-	</svg>
+	<Info size={14} class="mt-0.5 shrink-0 text-muted" />
 	<p class="text-xs leading-relaxed text-muted">
 		Hanya email yang terdaftar di sini yang bisa mengakses Mini Issues. Admin ditentukan lewat
 		environment variable <code class="rounded bg-surface-2 px-1 py-0.5 font-mono text-accent"

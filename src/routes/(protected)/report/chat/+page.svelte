@@ -8,6 +8,7 @@
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
+	import { ArrowRight, Send } from 'lucide-svelte';
 
 	type Role = 'ai' | 'user';
 
@@ -334,19 +335,7 @@
 					{#if reportId}
 						<Button href="/report/preview/{reportId}" size="lg" class="w-full">
 							Lihat Preview Tiket
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							>
-								<path d="M5 12h14" /><path d="M12 5l7 7-7 7" />
-							</svg>
+							<ArrowRight />
 						</Button>
 					{:else}
 						<div class="flex items-center justify-center gap-2 text-xs text-muted">
@@ -387,20 +376,7 @@
 					disabled={!inputValue.trim() || isLoading || isChatDone}
 					class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent text-bg transition-all hover:bg-accent/85 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
 				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="18"
-						height="18"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					>
-						<path d="M22 2L11 13" />
-						<path d="M22 2L15 22 11 13 2 9l20-7z" />
-					</svg>
+					<Send size={18} />
 				</button>
 			</div>
 			<p class="mt-2 text-center text-xs text-muted/60">

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { useClerkContext } from 'svelte-clerk/client';
+	import { ShieldCheck, LoaderCircle } from 'lucide-svelte';
 
 	const ctx = useClerkContext();
 
@@ -42,20 +43,7 @@
 			<div
 				class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-accent/20 bg-accent/10"
 			>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					width="22"
-					height="22"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					class="text-accent"
-				>
-					<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-				</svg>
+				<ShieldCheck size={40} class="text-accent" />
 			</div>
 			<h1 class="text-2xl font-bold text-foreground">Mini Issues</h1>
 			<p class="mt-1.5 text-sm text-muted">Laporkan masalah dengan mudah</p>
@@ -74,20 +62,7 @@
 				class="flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-surface-2 px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-accent/30 hover:bg-border disabled:cursor-not-allowed disabled:opacity-50"
 			>
 				{#if isLoading}
-					<svg
-						class="animate-spin text-muted"
-						xmlns="http://www.w3.org/2000/svg"
-						width="18"
-						height="18"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					>
-						<path d="M21 12a9 9 0 11-6.219-8.56" />
-					</svg>
+					<LoaderCircle size={18} class="animate-spin text-muted" />
 					Mengarahkan...
 				{:else}
 					<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">

@@ -9,6 +9,7 @@
 	import { TYPE_COLOR, TYPE_LABEL, PRIORITY_COLOR, PRIORITY_LABEL } from '$lib/constants/ticket';
 	import type { TicketType, Priority } from '$lib/constants/ticket';
 	import { formatDate } from '$lib/utils';
+	import { CircleCheckBig, Clock, ExternalLink } from 'lucide-svelte';
 
 	const reportId = $derived(page.params.id as Id<'reports'>);
 	const reportQuery = useQuery(api.reports.getById, () => ({ id: reportId }));
@@ -42,21 +43,7 @@
 				<div
 					class="flex h-16 w-16 items-center justify-center rounded-full border border-success/20 bg-success/10"
 				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="28"
-						height="28"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						class="text-success"
-					>
-						<path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
-						<polyline points="22 4 12 14.01 9 11.01" />
-					</svg>
+					<CircleCheckBig size={28} class="text-success" />
 				</div>
 			</div>
 
@@ -88,20 +75,7 @@
 				<p class="mb-3 text-sm leading-snug font-medium text-foreground">{report.title}</p>
 
 				<div class="flex items-center gap-1.5 text-xs text-muted">
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="12"
-						height="12"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					>
-						<circle cx="12" cy="12" r="10" />
-						<polyline points="12 6 12 12 16 14" />
-					</svg>
+					<Clock size={12} />
 					Dikirim pada {reportDate}
 				</div>
 			</div>
@@ -119,21 +93,7 @@
 						target="_blank"
 						rel="noopener noreferrer"
 					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="15"
-							height="15"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						>
-							<path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
-							<polyline points="15 3 21 3 21 9" />
-							<line x1="10" y1="14" x2="21" y2="3" />
-						</svg>
+						<ExternalLink size={15} />
 						Buka di Trello
 					</Button>
 				{/if}

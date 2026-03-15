@@ -7,6 +7,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
+	import { Upload } from 'lucide-svelte';
 
 	type TicketType = 'bug' | 'feature' | 'improvement';
 	type Priority = 'high' | 'medium' | 'low';
@@ -338,22 +339,7 @@
 						(document.getElementById('file-input') as HTMLInputElement)?.click();
 				}}
 			>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					width="20"
-					height="20"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					class="mb-2 text-muted"
-				>
-					<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline
-						points="17 8 12 3 7 8"
-					/><line x1="12" y1="3" x2="12" y2="15" />
-				</svg>
+				<Upload size={20} class="mb-2 text-muted" />
 				<p class="text-sm text-muted">Drag & drop atau klik untuk pilih file</p>
 				<input
 					id="file-input"

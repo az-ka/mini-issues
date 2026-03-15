@@ -8,6 +8,7 @@
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import DropdownMenuItem from '$lib/components/ui/DropdownMenuItem.svelte';
+	import { RefreshCw, Plus, EllipsisVertical, Pencil, Trash2, X } from 'lucide-svelte';
 
 	const client = useConvexClient();
 	const boardsQuery = useQuery(api.trelloBoards.list, {});
@@ -193,43 +194,11 @@
 		<Button
 			class="flex-1 sm:flex-none"
 			variant="secondary"
-			disabled={isSyncing}
+			loading={isSyncing}
 			onclick={handleSync}
 		>
-			{#if isSyncing}
-				<svg
-					class="animate-spin"
-					xmlns="http://www.w3.org/2000/svg"
-					width="13"
-					height="13"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-				>
-					<path d="M21 12a9 9 0 11-6.219-8.56" />
-				</svg>
-				Sinkronisasi...
-			{:else}
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					width="13"
-					height="13"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-				>
-					<polyline points="23 4 23 10 17 10" />
-					<polyline points="1 20 1 14 7 14" />
-					<path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
-				</svg>
-				Sinkronisasi
-			{/if}
+			<RefreshCw />
+			Sinkronisasi
 		</Button>
 		<Button
 			class="flex-1 sm:flex-none"
@@ -238,20 +207,7 @@
 				boardAddError = '';
 			}}
 		>
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				width="13"
-				height="13"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="2.5"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-			>
-				<line x1="12" y1="5" x2="12" y2="19" />
-				<line x1="5" y1="12" x2="19" y2="12" />
-			</svg>
+			<Plus />
 			Tambah
 		</Button>
 	</div>
@@ -345,39 +301,11 @@
 								aria-label="Menu {board.name}"
 								class="rounded p-1.5 text-muted transition-colors hover:bg-surface-2 hover:text-foreground"
 							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="15"
-									height="15"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								>
-									<circle cx="12" cy="5" r="1" />
-									<circle cx="12" cy="12" r="1" />
-									<circle cx="12" cy="19" r="1" />
-								</svg>
+								<EllipsisVertical size={15} />
 							</button>
 						{/snippet}
 						<DropdownMenuItem onclick={() => startEditBoard(board)}>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="13"
-								height="13"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								class="text-muted"
-							>
-								<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-								<path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-							</svg>
+							<Pencil size={13} class="text-muted" />
 							Edit
 						</DropdownMenuItem>
 						<DropdownMenuItem
@@ -385,23 +313,7 @@
 							separator
 							onclick={() => (deletingBoard = { id: board._id, name: board.name })}
 						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="13"
-								height="13"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							>
-								<polyline points="3 6 5 6 21 6" />
-								<path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
-								<path d="M10 11v6" />
-								<path d="M14 11v6" />
-								<path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
-							</svg>
+							<Trash2 size={13} />
 							Hapus
 						</DropdownMenuItem>
 					</DropdownMenu>
@@ -441,20 +353,7 @@
 			onclick={() => (boardError = null)}
 			class="shrink-0 text-danger/60 hover:text-danger"
 		>
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				width="13"
-				height="13"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="2"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-			>
-				<line x1="18" y1="6" x2="6" y2="18" />
-				<line x1="6" y1="6" x2="18" y2="18" />
-			</svg>
+			<X size={13} />
 		</button>
 	</div>
 {/if}
