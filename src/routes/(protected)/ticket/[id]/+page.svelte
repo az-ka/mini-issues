@@ -228,48 +228,87 @@
 			</div>
 		</div>
 
-		<!-- Trello link (hidden if card deleted or not yet sent) -->
-		{#if report.trelloCardUrl && !trelloDeleted}
-			<a
-				href={report.trelloCardUrl}
-				target="_blank"
-				rel="noopener noreferrer"
-				class="mb-5 flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3 transition-all hover:border-accent/30 hover:bg-surface-2"
-			>
-				<div class="flex items-center gap-2.5 text-sm text-foreground">
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="15"
-						height="15"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						class="text-accent"
+		<!-- Trello card info — board + link, shown when ticket has been sent and card is not deleted -->
+		{#if (report.trelloBoardLabel || report.trelloCardUrl) && !trelloDeleted}
+			<div class="mb-5 rounded-xl border border-border bg-surface">
+				<!-- Board info (top) -->
+				{#if report.trelloBoardLabel}
+					<div class="flex items-center gap-2.5 px-4 py-3">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="14"
+							height="14"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							class="shrink-0 text-accent"
+						>
+							<rect x="3" y="3" width="7" height="7" />
+							<rect x="14" y="3" width="7" height="7" />
+							<rect x="14" y="14" width="7" height="7" />
+							<rect x="3" y="14" width="7" height="7" />
+						</svg>
+						<div class="min-w-0">
+							<p class="text-sm font-medium text-foreground">{report.trelloBoardLabel}</p>
+							{#if report.trelloBoardName || report.trelloListName}
+								<p class="truncate text-xs text-muted">
+									{[report.trelloBoardName, report.trelloListName].filter(Boolean).join(' · ')}
+								</p>
+							{/if}
+						</div>
+					</div>
+				{/if}
+
+				<!-- Divider + Trello link (bottom) -->
+				{#if report.trelloCardUrl}
+					{#if report.trelloBoardLabel}
+						<hr class="border-border" />
+					{/if}
+					<a
+						href={report.trelloCardUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="flex items-center justify-between rounded-b-xl px-4 py-3 transition-colors hover:bg-surface-2"
 					>
-						<path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
-						<polyline points="15 3 21 3 21 9" />
-						<line x1="10" y1="14" x2="21" y2="3" />
-					</svg>
-					Buka card di Trello
-				</div>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					width="14"
-					height="14"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					class="text-muted"
-				>
-					<path d="M9 18l6-6-6-6" />
-				</svg>
-			</a>
+						<div class="flex items-center gap-2.5 text-sm text-foreground">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="15"
+								height="15"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								class="text-accent"
+							>
+								<path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+								<polyline points="15 3 21 3 21 9" />
+								<line x1="10" y1="14" x2="21" y2="3" />
+							</svg>
+							Buka card di Trello
+						</div>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="14"
+							height="14"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							class="text-muted"
+						>
+							<path d="M9 18l6-6-6-6" />
+						</svg>
+					</a>
+				{/if}
+			</div>
 		{/if}
 
 		<!-- Fields -->

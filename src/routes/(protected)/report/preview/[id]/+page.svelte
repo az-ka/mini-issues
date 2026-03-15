@@ -49,7 +49,6 @@
 	let previewFile = $state<File | null>(null);
 	let previewUrl = $state('');
 	let isSending = $state(false);
-	let selectedBoardId = $state(''); // selected trelloBoards._id
 
 	// Derived from Convex — already sent if trelloCardId exists
 	const alreadySent = $derived(!!reportQuery.data?.trelloCardId);
@@ -156,18 +155,6 @@
 		if (e.dataTransfer?.files) addFiles(Array.from(e.dataTransfer.files));
 	}
 
-	// Auto-select first active board when boards load
-	$effect(() => {
-		if (activeBoards.length > 0 && !selectedBoardId) {
-			selectedBoardId = activeBoards[0]._id;
-		}
-	});
-
-	// Derived: the list ID for the selected board (fallback to empty = API uses env var)
-	const selectedListId = $derived(
-		activeBoards.find((b) => b._id === selectedBoardId)?.listId ?? ''
-	);
-
 	async function sendToTrello() {
 		if (isSending || alreadySent) return;
 		isSending = true;
@@ -186,7 +173,6 @@
 			form.append('frequency', frequency);
 			form.append('businessImpact', impact);
 			form.append('reporterName', reporterName);
-			if (selectedListId) form.append('listId', selectedListId);
 
 			for (const file of attachments) {
 				form.append('attachments', file, file.name);
@@ -627,49 +613,68 @@
 
 			<!-- Actions -->
 			<div class="flex flex-col gap-3 pt-2 pb-8">
-				<!-- Board selector — only show if there are configured boards -->
-				{#if !alreadySent && activeBoards.length > 0}
-					<div>
-						<label for="board-select" class="mb-1.5 block text-xs font-medium text-muted"
-							>Kirim ke Board</label
-						>
-						<select
-							id="board-select"
-							bind:value={selectedBoardId}
-							class="w-full rounded-xl border border-border bg-surface-2 px-4 py-2.5 text-sm text-foreground transition-colors focus:border-accent/50 focus:ring-2 focus:ring-accent/15 focus:outline-none"
-						>
-							{#each activeBoards as board (board._id)}
-								<option value={board._id}>{board.name}</option>
-							{/each}
-						</select>
-					</div>
-				{/if}
-
-				<Button size="lg" class="w-full" onclick={sendToTrello} disabled={isSending || alreadySent}>
-					{#if isSending}
-						<div
-							class="h-4 w-4 animate-spin rounded-full border-2 border-bg border-t-transparent"
-						></div>
-						Mengirim...
-					{:else}
+				<!-- Alert: no active boards configured -->
+				{#if !alreadySent && !boardsQuery.isLoading && activeBoards.length === 0}
+					<div
+						class="flex items-start gap-2.5 rounded-xl border border-warning/30 bg-warning/5 px-4 py-3"
+					>
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
-							width="16"
-							height="16"
+							width="14"
+							height="14"
 							viewBox="0 0 24 24"
 							fill="none"
 							stroke="currentColor"
 							stroke-width="2"
 							stroke-linecap="round"
 							stroke-linejoin="round"
+							class="mt-0.5 shrink-0 text-warning"
 						>
-							<path d="M22 11.08V12a10 10 0 11-5.93-9.14" /><polyline
-								points="22 4 12 14.01 9 11.01"
+							<path
+								d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
 							/>
+							<line x1="12" y1="9" x2="12" y2="13" />
+							<line x1="12" y1="17" x2="12.01" y2="17" />
 						</svg>
-						Kirim ke Trello
-					{/if}
-				</Button>
+						<p class="text-xs leading-relaxed text-warning">
+							Belum ada board Trello yang aktif. Hubungi admin untuk mengkonfigurasi board terlebih
+							dahulu.
+						</p>
+					</div>
+				{/if}
+
+				{#if !(!alreadySent && !boardsQuery.isLoading && activeBoards.length === 0)}
+					<Button
+						size="lg"
+						class="w-full"
+						onclick={sendToTrello}
+						disabled={isSending || alreadySent}
+					>
+						{#if isSending}
+							<div
+								class="h-4 w-4 animate-spin rounded-full border-2 border-bg border-t-transparent"
+							></div>
+							Mengirim...
+						{:else}
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="16"
+								height="16"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							>
+								<path d="M22 11.08V12a10 10 0 11-5.93-9.14" /><polyline
+									points="22 4 12 14.01 9 11.01"
+								/>
+							</svg>
+							Kirim ke Trello
+						{/if}
+					</Button>
+				{/if}
 				<a
 					href="/report/chat"
 					class="text-center text-sm text-muted transition-colors hover:text-foreground"

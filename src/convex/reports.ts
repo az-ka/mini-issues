@@ -89,7 +89,10 @@ export const markSentToTrello = mutation({
 		id: v.id('reports'),
 		trelloCardId: v.string(),
 		trelloCardUrl: v.string(),
-		attachmentUrls: v.optional(v.string())
+		attachmentUrls: v.optional(v.string()),
+		trelloBoardLabel: v.optional(v.string()),
+		trelloBoardName: v.optional(v.string()),
+		trelloListName: v.optional(v.string())
 	},
 	handler: async (ctx, args) => {
 		const identity = await ctx.auth.getUserIdentity();
@@ -110,6 +113,9 @@ export const markSentToTrello = mutation({
 			trelloCardId: args.trelloCardId,
 			trelloCardUrl: args.trelloCardUrl,
 			attachmentUrls: args.attachmentUrls,
+			trelloBoardLabel: args.trelloBoardLabel,
+			trelloBoardName: args.trelloBoardName,
+			trelloListName: args.trelloListName,
 			updatedAt: Date.now()
 		});
 	}

@@ -48,7 +48,11 @@ export default defineSchema({
 		trelloListIndex: v.optional(v.number()), // 0-based index of the card's list (sorted by pos)
 		trelloTotalLists: v.optional(v.number()), // Total open lists on the board at time of fetch
 		trelloLastFetched: v.optional(v.number()), // Epoch ms of last Trello status fetch
-		ticketNumber: v.optional(v.number()) // Sequential MI-XXX number
+		ticketNumber: v.optional(v.number()), // Sequential MI-XXX number
+		// Board destination info — stored when card is created
+		trelloBoardLabel: v.optional(v.string()), // Admin custom label (e.g. "Bug FE")
+		trelloBoardName: v.optional(v.string()), // Trello board display name
+		trelloListName: v.optional(v.string()) // Trello list display name
 	})
 		.index('by_reporter', ['reporterId'])
 		.index('by_status', ['status']),
