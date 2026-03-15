@@ -8,6 +8,7 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import AttachmentUploader from '$lib/components/AttachmentUploader.svelte';
+	import { Bug, Sparkles, Zap, AlertCircle, CircleDot, ArrowDownCircle } from 'lucide-svelte';
 
 	type TicketType = 'bug' | 'feature' | 'improvement';
 	type Priority = 'high' | 'medium' | 'low';
@@ -49,6 +50,20 @@
 			selectedBoardId = activeBoards[0]._id;
 		}
 	});
+
+	// Icon mapping for types
+	const typeOptions = [
+		{ value: 'bug', label: 'Bug', icon: Bug },
+		{ value: 'feature', label: 'Fitur', icon: Sparkles },
+		{ value: 'improvement', label: 'Peningkatan', icon: Zap }
+	];
+
+	// Icon mapping for priorities
+	const priorityOptions = [
+		{ value: 'high', label: 'Tinggi', icon: AlertCircle, color: 'text-danger' },
+		{ value: 'medium', label: 'Sedang', icon: CircleDot, color: 'text-warning' },
+		{ value: 'low', label: 'Rendah', icon: ArrowDownCircle, color: 'text-success' }
+	];
 
 	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault();
@@ -133,9 +148,9 @@
 					Tipe <span class="text-danger">*</span>
 				</legend>
 				<div class="flex flex-wrap gap-2">
-					{#each [{ value: 'bug', label: '🐛 Bug' }, { value: 'feature', label: '✨ Fitur' }, { value: 'improvement', label: '⚡ Peningkatan' }] as opt (opt.value)}
+					{#each typeOptions as opt (opt.value)}
 						<label
-							class="cursor-pointer rounded-lg border px-3 py-1.5 text-sm transition-colors {type ===
+							class="flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-1.5 text-sm transition-colors {type ===
 							opt.value
 								? 'border-accent bg-accent/10 text-accent'
 								: 'border-border text-muted hover:border-accent/40'}"
@@ -148,6 +163,7 @@
 								class="sr-only"
 								disabled={isSubmitting}
 							/>
+							<opt.icon size={15} />
 							{opt.label}
 						</label>
 					{/each}
@@ -158,9 +174,9 @@
 			<fieldset>
 				<legend class="mb-2 text-sm font-medium text-foreground">Prioritas</legend>
 				<div class="flex flex-wrap gap-2">
-					{#each [{ value: 'high', label: '🔴 Tinggi' }, { value: 'medium', label: '🟡 Sedang' }, { value: 'low', label: '🟢 Rendah' }] as opt (opt.value)}
+					{#each priorityOptions as opt (opt.value)}
 						<label
-							class="cursor-pointer rounded-lg border px-3 py-1.5 text-sm transition-colors {priority ===
+							class="flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-1.5 text-sm transition-colors {priority ===
 							opt.value
 								? 'border-accent bg-accent/10 text-accent'
 								: 'border-border text-muted hover:border-accent/40'}"
@@ -173,6 +189,7 @@
 								class="sr-only"
 								disabled={isSubmitting}
 							/>
+							<opt.icon size={15} class={priority === opt.value ? 'text-accent' : opt.color} />
 							{opt.label}
 						</label>
 					{/each}
@@ -353,22 +370,10 @@
 				<Button
 					type="submit"
 					size="lg"
+					loading={isSubmitting}
 					disabled={isSubmitting || !title.trim() || (!selectedBoardId && activeBoards.length > 1)}
 				>
-					{#if isSubmitting}
-						<span class="inline-flex gap-1">
-							<span class="h-1.5 w-1.5 animate-bounce rounded-full bg-current"></span>
-							<span
-								class="h-1.5 w-1.5 animate-bounce rounded-full bg-current [animation-delay:150ms]"
-							></span>
-							<span
-								class="h-1.5 w-1.5 animate-bounce rounded-full bg-current [animation-delay:300ms]"
-							></span>
-						</span>
-						Mengirim...
-					{:else}
-						Kirim ke Trello
-					{/if}
+					Kirim ke Trello
 				</Button>
 			{/if}
 			<a href="/dashboard" class="text-sm text-muted transition-colors hover:text-foreground">
