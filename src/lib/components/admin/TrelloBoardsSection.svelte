@@ -362,50 +362,48 @@
 								</svg>
 							</button>
 						{/snippet}
-						{#snippet children()}
-							<DropdownMenuItem onclick={() => startEditBoard(board)}>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="13"
-									height="13"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									class="text-muted"
-								>
-									<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-									<path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-								</svg>
-								Edit
-							</DropdownMenuItem>
-							<DropdownMenuItem
-								variant="danger"
-								separator
-								onclick={() => (deletingBoard = { id: board._id, name: board.name })}
+						<DropdownMenuItem onclick={() => startEditBoard(board)}>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="13"
+								height="13"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								class="text-muted"
 							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="13"
-									height="13"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								>
-									<polyline points="3 6 5 6 21 6" />
-									<path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
-									<path d="M10 11v6" />
-									<path d="M14 11v6" />
-									<path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
-								</svg>
-								Hapus
-							</DropdownMenuItem>
-						{/snippet}
+								<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+								<path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+							</svg>
+							Edit
+						</DropdownMenuItem>
+						<DropdownMenuItem
+							variant="danger"
+							separator
+							onclick={() => (deletingBoard = { id: board._id, name: board.name })}
+						>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="13"
+								height="13"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							>
+								<polyline points="3 6 5 6 21 6" />
+								<path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+								<path d="M10 11v6" />
+								<path d="M14 11v6" />
+								<path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+							</svg>
+							Hapus
+						</DropdownMenuItem>
 					</DropdownMenu>
 				</div>
 
@@ -463,10 +461,8 @@
 
 <!-- Delete confirmation modal -->
 <Dialog open={!!deletingBoard} title="Hapus Board" onclose={() => (deletingBoard = null)}>
-	{#snippet children()}
-		Yakin ingin menghapus board <strong class="text-foreground">{deletingBoard?.name}</strong>?
-		Tindakan ini tidak dapat dibatalkan.
-	{/snippet}
+	Yakin ingin menghapus board <strong class="text-foreground">{deletingBoard?.name}</strong>?
+	Tindakan ini tidak dapat dibatalkan.
 	{#snippet footer()}
 		<Button variant="ghost" onclick={() => (deletingBoard = null)}>Batal</Button>
 		<Button variant="danger" onclick={() => deletingBoard && handleDeleteBoard(deletingBoard.id)}>
