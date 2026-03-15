@@ -7,7 +7,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
-	import { Upload } from 'lucide-svelte';
+	import AttachmentUploader from '$lib/components/AttachmentUploader.svelte';
 
 	type TicketType = 'bug' | 'feature' | 'improvement';
 	type Priority = 'high' | 'medium' | 'low';
@@ -35,7 +35,6 @@
 	let selectedBoardId = $state('');
 
 	let attachments = $state<File[]>([]);
-	let isDragging = $state(false);
 
 	// Submission state
 	let isSubmitting = $state(false);
@@ -43,8 +42,6 @@
 	let savedReportId = $state(''); // saved after Convex mutation so Trello can retry
 
 	const isBug = $derived(type === 'bug');
-	const MAX_FILE_SIZE = 10 * 1024 * 1024;
-	const MAX_FILES = 5;
 
 	// Auto-select when only one board exists
 	$effect(() => {
@@ -52,22 +49,6 @@
 			selectedBoardId = activeBoards[0]._id;
 		}
 	});
-
-	function addFiles(fileList: FileList | null) {
-		if (!fileList) return;
-		const incoming = Array.from(fileList).filter((f) => f.size <= MAX_FILE_SIZE);
-		attachments = [...attachments, ...incoming].slice(0, MAX_FILES);
-	}
-
-	function removeFile(index: number) {
-		attachments = attachments.filter((_, i) => i !== index);
-	}
-
-	function formatSize(bytes: number) {
-		return bytes < 1024 * 1024
-			? `${(bytes / 1024).toFixed(0)} KB`
-			: `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-	}
 
 	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault();
@@ -313,63 +294,12 @@
 
 		<!-- Attachments -->
 		<div>
-			<p class="mb-2 text-sm font-medium text-foreground">
-				Lampiran <span class="font-normal text-muted">(maks. {MAX_FILES} file, 10 MB each)</span>
-			</p>
-			<!-- Drop zone -->
-			<div
-				role="button"
-				tabindex="0"
-				class="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 text-center transition-colors {isDragging
-					? 'border-accent bg-accent/5'
-					: 'border-border hover:border-accent/40'}"
-				ondragover={(e) => {
-					e.preventDefault();
-					isDragging = true;
-				}}
-				ondragleave={() => (isDragging = false)}
-				ondrop={(e) => {
-					e.preventDefault();
-					isDragging = false;
-					addFiles(e.dataTransfer?.files ?? null);
-				}}
-				onclick={() => (document.getElementById('file-input') as HTMLInputElement)?.click()}
-				onkeydown={(e) => {
-					if (e.key === 'Enter' || e.key === ' ')
-						(document.getElementById('file-input') as HTMLInputElement)?.click();
-				}}
-			>
-				<Upload size={20} class="mb-2 text-muted" />
-				<p class="text-sm text-muted">Drag & drop atau klik untuk pilih file</p>
-				<input
-					id="file-input"
-					type="file"
-					multiple
-					accept="image/*,.pdf,.txt,.log"
-					class="hidden"
-					disabled={isSubmitting}
-					onchange={(e) => addFiles((e.target as HTMLInputElement).files)}
-				/>
-			</div>
-
-			{#if attachments.length > 0}
-				<ul class="mt-2 space-y-1">
-					{#each attachments as file, i (file.name + i)}
-						<li
-							class="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm"
-						>
-							<span class="truncate text-foreground">{file.name}</span>
-							<span class="ml-2 shrink-0 text-xs text-muted">{formatSize(file.size)}</span>
-							<button
-								type="button"
-								onclick={() => removeFile(i)}
-								class="ml-3 text-muted transition-colors hover:text-danger"
-								aria-label="Hapus file">✕</button
-							>
-						</li>
-					{/each}
-				</ul>
-			{/if}
+			<AttachmentUploader
+				bind:attachments
+				accept="image/*,.pdf,.txt,.log"
+				hint="JPG, PNG, PDF, TXT, LOG"
+				disabled={isSubmitting}
+			/>
 		</div>
 
 		<!-- Board selection -->
