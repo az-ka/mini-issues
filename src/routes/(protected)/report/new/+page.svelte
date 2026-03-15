@@ -8,7 +8,7 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import AttachmentUploader from '$lib/components/AttachmentUploader.svelte';
-	import { Bug, Sparkles, Zap, AlertCircle, CircleDot, ArrowDownCircle } from 'lucide-svelte';
+	import { Bug, Sparkles, Zap, CircleAlert, CircleDot, CircleArrowDown } from 'lucide-svelte';
 
 	type TicketType = 'bug' | 'feature' | 'improvement';
 	type Priority = 'high' | 'medium' | 'low';
@@ -60,9 +60,9 @@
 
 	// Icon mapping for priorities
 	const priorityOptions = [
-		{ value: 'high', label: 'Tinggi', icon: AlertCircle, color: 'text-danger' },
+		{ value: 'high', label: 'Tinggi', icon: CircleAlert, color: 'text-danger' },
 		{ value: 'medium', label: 'Sedang', icon: CircleDot, color: 'text-warning' },
-		{ value: 'low', label: 'Rendah', icon: ArrowDownCircle, color: 'text-success' }
+		{ value: 'low', label: 'Rendah', icon: CircleArrowDown, color: 'text-success' }
 	];
 
 	async function handleSubmit(e: SubmitEvent) {
@@ -365,20 +365,16 @@
 		{/if}
 
 		<!-- Actions -->
-		<div class="flex items-center gap-3 pt-2">
-			{#if hasBoards}
-				<Button
-					type="submit"
-					size="lg"
-					loading={isSubmitting}
-					disabled={isSubmitting || !title.trim() || (!selectedBoardId && activeBoards.length > 1)}
-				>
-					Kirim ke Trello
-				</Button>
-			{/if}
-			<a href="/dashboard" class="text-sm text-muted transition-colors hover:text-foreground">
-				Batal
-			</a>
-		</div>
+		{#if hasBoards}
+			<Button
+				type="submit"
+				size="lg"
+				class="w-full"
+				loading={isSubmitting}
+				disabled={isSubmitting || !title.trim() || (!selectedBoardId && activeBoards.length > 1)}
+			>
+				Kirim ke Trello
+			</Button>
+		{/if}
 	</form>
 </div>
