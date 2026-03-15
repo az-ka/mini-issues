@@ -106,6 +106,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 	const reportId = formData.get('reportId') as string;
 	const title = formData.get('title') as string;
+	const manualBoardId = formData.get('boardId') as string | null;
 	const files = formData.getAll('attachments') as File[];
 
 	if (!reportId || !title) error(400, 'reportId and title are required');
@@ -145,15 +146,27 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	let listId = env.TRELLO_LIST_ID ?? '';
 
 	if (activeBoards.length > 0) {
-		selectedBoard = await selectBoard(activeBoards, {
-			type: fields.type as string,
-			title,
-			priority: fields.priority as string | undefined,
-			module: fields.module as string | undefined,
-			description: fields.description as string | undefined
-		});
-		listId = selectedBoard.listId;
-		console.log(`[/api/trello] Step 2: selected board "${selectedBoard.name}" → listId ${listId}`);
+		if (manualBoardId) {
+			// Manual form — skip AI, use the user-selected board
+			selectedBoard = activeBoards.find((b) => b._id === manualBoardId) ?? activeBoards[0];
+			listId = selectedBoard.listId;
+			console.log(
+				`[/api/trello] Step 2: manual board → "${selectedBoard.name}" → listId ${listId}`
+			);
+		} else {
+			// AI chat flow — let AI pick the best board
+			selectedBoard = await selectBoard(activeBoards, {
+				type: fields.type as string,
+				title,
+				priority: fields.priority as string | undefined,
+				module: fields.module as string | undefined,
+				description: fields.description as string | undefined
+			});
+			listId = selectedBoard.listId;
+			console.log(
+				`[/api/trello] Step 2: AI selected board "${selectedBoard.name}" → listId ${listId}`
+			);
+		}
 	} else {
 		console.warn('[/api/trello] Step 2: no active boards, using TRELLO_LIST_ID fallback');
 	}

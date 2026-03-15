@@ -63,6 +63,53 @@ export const saveDraft = mutation({
 	}
 });
 
+export const createManual = mutation({
+	args: {
+		title: v.string(),
+		type: v.string(),
+		priority: v.optional(v.string()),
+		module: v.optional(v.string()),
+		description: v.optional(v.string()),
+		stepsToReproduce: v.optional(v.string()),
+		expectedResult: v.optional(v.string()),
+		actualResult: v.optional(v.string()),
+		frequency: v.optional(v.string()),
+		businessImpact: v.optional(v.string())
+	},
+	handler: async (ctx, args) => {
+		const user = await requireUser(ctx);
+		const now = Date.now();
+
+		const allReports = await ctx.db.query('reports').collect();
+		const maxTicketNumber = allReports.reduce((max, r) => Math.max(max, r.ticketNumber ?? 0), 0);
+		const ticketNumber = maxTicketNumber + 1;
+
+		// Accept both lowercase ('bug') and title case ('Bug') type values
+		const normalizedType =
+			args.type === 'bug' || args.type === 'feature' || args.type === 'improvement'
+				? (args.type as 'bug' | 'feature' | 'improvement')
+				: (TYPE_MAP[args.type] ?? 'bug');
+
+		return await ctx.db.insert('reports', {
+			title: args.title.slice(0, 80),
+			type: normalizedType,
+			status: 'draft',
+			reporterId: user._id,
+			priority: args.priority?.toLowerCase(),
+			module: args.module,
+			description: args.description,
+			stepsToReproduce: args.stepsToReproduce,
+			expectedResult: args.expectedResult,
+			actualResult: args.actualResult,
+			frequency: args.frequency,
+			businessImpact: args.businessImpact,
+			ticketNumber,
+			createdAt: now,
+			updatedAt: now
+		});
+	}
+});
+
 export const getDraft = query({
 	args: { id: v.id('reports') },
 	handler: async (ctx, args) => {

@@ -309,13 +309,18 @@
 			{#if errorMessage}
 				<div class="rounded-xl border border-danger/20 bg-danger/5 px-4 py-3 text-sm text-danger">
 					⚠️ {errorMessage}
-					<button
-						type="button"
-						onclick={() => (errorMessage = '')}
-						class="ml-2 underline hover:no-underline"
-					>
-						Tutup
-					</button>
+					<div class="mt-2 flex flex-wrap items-center gap-3">
+						<a href="/report/new" class="font-medium text-white underline hover:no-underline">
+							Buat Manual →
+						</a>
+						<button
+							type="button"
+							onclick={() => (errorMessage = '')}
+							class="cursor-pointer text-muted"
+						>
+							Tutup
+						</button>
+					</div>
 				</div>
 			{/if}
 
