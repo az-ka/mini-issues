@@ -2,9 +2,7 @@ import { ConvexError, v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 
 const DEFAULTS = {
-	notifyOnNew: true,
-	notifyOnStatusChange: false,
-	notifyOnAssign: false
+	notifyOnNew: true
 };
 
 // Get settings — returns defaults if not yet configured
@@ -22,9 +20,7 @@ export const get = query({
 // Update settings (admin only — caller must ensure admin check on client)
 export const update = mutation({
 	args: {
-		notifyOnNew: v.boolean(),
-		notifyOnStatusChange: v.boolean(),
-		notifyOnAssign: v.boolean()
+		notifyOnNew: v.boolean()
 	},
 	handler: async (ctx, args) => {
 		const identity = await ctx.auth.getUserIdentity();
