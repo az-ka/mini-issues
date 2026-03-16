@@ -334,7 +334,7 @@
 					<p class="mb-4 text-xs text-muted">Cek dan edit draft tiket sebelum dikirim ke Trello.</p>
 					{#if reportId}
 						<Button href="/report/preview/{reportId}" size="lg" class="w-full">
-							Lihat Preview Tiket
+							Lanjut ke Review
 							<ArrowRight />
 						</Button>
 					{:else}
