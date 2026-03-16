@@ -93,7 +93,7 @@ Respond with ONLY the index number (0 to ${boards.length - 1}) of the best match
 	return boards[0];
 }
 
-export const POST: RequestHandler = async ({ request, locals }) => {
+export const POST: RequestHandler = async ({ request, locals, url }) => {
 	const { userId, getToken } = locals.auth();
 	if (!userId) error(401, 'Unauthorized');
 
@@ -240,17 +240,20 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				const report = await convex.query(api.reports.getById, {
 					id: reportId as Id<'reports'>
 				});
-				const message = buildNewTicketMessage({
-					ticketNumber: report?.ticketNumber,
-					title,
-					type: (fields.type as string) ?? '',
-					priority: fields.priority as string | undefined,
-					module: fields.module as string | undefined,
-					reporterName: fields.reporterName as string | undefined,
-					boardLabel: selectedBoard?.name,
-					cardUrl: card.url
-				});
-				await sendTelegramMessage(message);
+				const msg = buildNewTicketMessage(
+					{
+						ticketNumber: report?.ticketNumber,
+						title,
+						type: (fields.type as string) ?? '',
+						priority: fields.priority as string | undefined,
+						module: fields.module as string | undefined,
+						reporterName: fields.reporterName as string | undefined,
+						cardUrl: card.url,
+						reportId
+					},
+					url.origin
+				);
+				await sendTelegramMessage(msg);
 				console.log('[/api/trello] Step 6: Telegram notification sent');
 			}
 		} catch (err) {

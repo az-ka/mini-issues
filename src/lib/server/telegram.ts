@@ -2,7 +2,33 @@ import { env } from '$env/dynamic/private';
 
 const TELEGRAM_API = 'https://api.telegram.org';
 
-export async function sendTelegramMessage(text: string): Promise<void> {
+// ── Label mappings ──────────────────────────────────────────────────────────
+
+const TYPE_LABELS: Record<string, string> = {
+	bug: '🐛 Bug',
+	feature: '✨ Fitur Baru',
+	improvement: '⚡ Improvement'
+};
+
+const PRIORITY_LABELS: Record<string, string> = {
+	low: '🟢 Rendah',
+	medium: '🟡 Sedang',
+	high: '🔴 Tinggi',
+	critical: '🚨 Kritis'
+};
+
+// ── Types ───────────────────────────────────────────────────────────────────
+
+export interface TelegramMessage {
+	text: string;
+	replyMarkup?: {
+		inline_keyboard: { text: string; url: string }[][];
+	};
+}
+
+// ── Core send ───────────────────────────────────────────────────────────────
+
+export async function sendTelegramMessage(msg: TelegramMessage): Promise<void> {
 	const token = env.TELEGRAM_BOT_TOKEN?.trim();
 	const chatId = env.TELEGRAM_CHAT_ID?.trim();
 
@@ -11,58 +37,81 @@ export async function sendTelegramMessage(text: string): Promise<void> {
 		return;
 	}
 
+	const body: Record<string, unknown> = {
+		chat_id: chatId,
+		text: msg.text,
+		parse_mode: 'HTML',
+		link_preview_options: { is_disabled: true }
+	};
+	if (msg.replyMarkup) body.reply_markup = msg.replyMarkup;
+
 	const res = await fetch(`${TELEGRAM_API}/bot${token}/sendMessage`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({
-			chat_id: chatId,
-			text,
-			parse_mode: 'Markdown',
-			disable_web_page_preview: true
-		})
+		body: JSON.stringify(body)
 	});
 
 	if (!res.ok) {
-		const body = await res.text();
-		console.error('[telegram] Failed to send message:', res.status, body);
+		const text = await res.text();
+		console.error('[telegram] Failed to send message:', res.status, text);
 	}
 }
 
-export function buildNewTicketMessage(ticket: {
-	ticketNumber?: number;
-	title: string;
-	type: string;
-	priority?: string;
-	module?: string;
-	reporterName?: string;
-	boardLabel?: string;
-	cardUrl?: string;
-}): string {
-	const lines: string[] = [];
+// ── Message builders ────────────────────────────────────────────────────────
 
-	lines.push(`🎫 *Tiket Baru*`);
-	lines.push('');
+export function buildNewTicketMessage(
+	ticket: {
+		ticketNumber?: number;
+		title: string;
+		type: string;
+		priority?: string;
+		module?: string;
+		reporterName?: string;
+		cardUrl?: string;
+		reportId?: string;
+	},
+	appUrl?: string
+): TelegramMessage {
+	const typeLabel = TYPE_LABELS[ticket.type] ?? ticket.type;
+	const priorityLabel = ticket.priority
+		? (PRIORITY_LABELS[ticket.priority] ?? ticket.priority)
+		: null;
 
-	if (ticket.ticketNumber) lines.push(`🔢 *No:* MI\\-${ticket.ticketNumber}`);
-	lines.push(`📌 *Judul:* ${escapeMarkdown(ticket.title)}`);
+	const fields: string[] = [];
 
-	const typeLabel: Record<string, string> = {
-		bug: '🐛 Bug',
-		feature: '✨ Feature Request',
-		improvement: '⚡ Improvement'
-	};
-	lines.push(`🏷️ *Tipe:* ${typeLabel[ticket.type] ?? ticket.type}`);
+	if (ticket.ticketNumber)
+		fields.push(`No    : <code>MI-${String(ticket.ticketNumber).padStart(3, '0')}</code>`);
+	fields.push(`Judul : ${e(ticket.title)}`);
 
-	if (ticket.priority) lines.push(`🔴 *Prioritas:* ${ticket.priority}`);
-	if (ticket.module) lines.push(`📦 *Modul:* ${escapeMarkdown(ticket.module)}`);
-	if (ticket.boardLabel) lines.push(`📋 *Board:* ${escapeMarkdown(ticket.boardLabel)}`);
-	if (ticket.reporterName) lines.push(`👤 *Dari:* ${escapeMarkdown(ticket.reporterName)}`);
-	if (ticket.cardUrl) lines.push(`🔗 [Lihat di Trello](${ticket.cardUrl})`);
+	const tipeLine = [typeLabel, priorityLabel].filter(Boolean).join(' · ');
+	fields.push(`Tipe  : ${tipeLine}`);
 
-	return lines.join('\n');
+	if (ticket.module) fields.push(`Modul : ${e(ticket.module)}`);
+	if (ticket.reporterName) fields.push(`Dari  : ${e(ticket.reporterName)}`);
+
+	const header = `🎫 <b>MINI ISSUES</b> · Tiket Baru`;
+	const separator = '─────────────────';
+	const text = [header, separator, ...fields].join('\n');
+
+	// Build inline keyboard buttons — Telegram only accepts HTTPS URLs
+	const isHttps = (u: string) => u.startsWith('https://');
+	const buttons: { text: string; url: string }[] = [];
+
+	if (ticket.cardUrl && isHttps(ticket.cardUrl))
+		buttons.push({ text: '↗ Buka Trello', url: ticket.cardUrl });
+
+	if (appUrl && ticket.reportId) {
+		const ticketUrl = `${appUrl}/ticket/${ticket.reportId}`;
+		if (isHttps(ticketUrl)) buttons.push({ text: '↗ Buka Tiket', url: ticketUrl });
+	}
+
+	const replyMarkup = buttons.length > 0 ? { inline_keyboard: [buttons] } : undefined;
+
+	return { text, replyMarkup };
 }
 
-// Escape special Markdown characters for Telegram
-function escapeMarkdown(text: string): string {
-	return text.replace(/([_*[\]()~`>#+\-=|{}.!])/g, '\\$1');
+// ── HTML escape ─────────────────────────────────────────────────────────────
+
+function e(text: string): string {
+	return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }

@@ -3,13 +3,15 @@
 	import { api } from '$convex/api';
 	import { extractError } from '$lib/utils';
 	import Toggle from '$lib/components/ui/Toggle.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import { toast } from 'svelte-sonner';
 
 	const client = useConvexClient();
 	const settingsQuery = useQuery(api.notificationSettings.get, {});
 
 	let saveError = $state('');
+	let isTesting = $state(false);
 
-	// Local state mirrors Convex — synced once when data loads
 	let notifyOnNew = $state(true);
 	let notifyOnStatusChange = $state(false);
 	let notifyOnAssign = $state(false);
@@ -39,6 +41,23 @@
 			});
 		} catch (err) {
 			saveError = extractError(err, 'Gagal menyimpan pengaturan.');
+		}
+	}
+
+	async function handleTest() {
+		if (isTesting) return;
+		isTesting = true;
+		try {
+			const res = await fetch('/api/telegram/test', { method: 'POST' });
+			if (res.ok) {
+				toast.success('Notifikasi Telegram terkirim!');
+			} else {
+				toast.error('Gagal mengirim notifikasi Telegram.');
+			}
+		} catch {
+			toast.error('Gagal mengirim notifikasi Telegram.');
+		} finally {
+			isTesting = false;
 		}
 	}
 </script>
@@ -93,6 +112,7 @@
 				label="Toggle notifikasi tiket baru"
 				onchange={(val) => saveField({ notifyOnNew: val })}
 			/>
+			<Button variant="secondary" size="sm" loading={isTesting} onclick={handleTest}>Test</Button>
 		</div>
 
 		<!-- Status berubah -->
