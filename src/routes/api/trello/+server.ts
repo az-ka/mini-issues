@@ -2,6 +2,7 @@ import { json, error } from '@sveltejs/kit';
 import { TRELLO_API_KEY, TRELLO_TOKEN } from '$env/static/private';
 import { env } from '$env/dynamic/private';
 import { generateText } from '$lib/server/ai';
+import { sendTelegramMessage, buildNewTicketMessage } from '$lib/server/telegram';
 import { ConvexHttpClient } from 'convex/browser';
 import { PUBLIC_CONVEX_URL } from '$env/static/public';
 import { api } from '$convex/api';
@@ -230,6 +231,32 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		trelloBoardName: selectedBoard?.boardName,
 		trelloListName: selectedBoard?.listName
 	});
+
+	// Step 6: Send Telegram notification (non-blocking, fire-and-forget)
+	(async () => {
+		try {
+			const notifSettings = await convex.query(api.notificationSettings.get, {});
+			if (notifSettings?.notifyOnNew) {
+				const report = await convex.query(api.reports.getById, {
+					id: reportId as Id<'reports'>
+				});
+				const message = buildNewTicketMessage({
+					ticketNumber: report?.ticketNumber,
+					title,
+					type: (fields.type as string) ?? '',
+					priority: fields.priority as string | undefined,
+					module: fields.module as string | undefined,
+					reporterName: fields.reporterName as string | undefined,
+					boardLabel: selectedBoard?.name,
+					cardUrl: card.url
+				});
+				await sendTelegramMessage(message);
+				console.log('[/api/trello] Step 6: Telegram notification sent');
+			}
+		} catch (err) {
+			console.error('[/api/trello] Step 6: Telegram notification failed (non-fatal):', err);
+		}
+	})();
 
 	return json({
 		cardId: card.id,

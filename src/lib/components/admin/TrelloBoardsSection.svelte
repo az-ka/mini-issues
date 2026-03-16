@@ -9,6 +9,7 @@
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import DropdownMenuItem from '$lib/components/ui/DropdownMenuItem.svelte';
 	import { RefreshCw, Plus, EllipsisVertical, Pencil, Trash2, X } from 'lucide-svelte';
+	import Toggle from '$lib/components/ui/Toggle.svelte';
 
 	const client = useConvexClient();
 	const boardsQuery = useQuery(api.trelloBoards.list, {});
@@ -275,23 +276,11 @@
 						</p>
 					</div>
 
-					<!-- Toggle switch -->
-					<button
-						type="button"
-						role="switch"
-						aria-checked={board.isActive}
-						aria-label="Toggle aktif {board.name}"
-						onclick={() => handleToggleActive(board)}
-						class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus:outline-none {board.isActive
-							? 'bg-accent'
-							: 'bg-surface-2 ring-1 ring-border'}"
-					>
-						<span
-							class="inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform {board.isActive
-								? 'translate-x-4'
-								: 'translate-x-0'}"
-						></span>
-					</button>
+					<Toggle
+						bind:checked={board.isActive}
+						label="Toggle aktif {board.name}"
+						onchange={() => handleToggleActive(board)}
+					/>
 
 					<!-- Three-dot menu -->
 					<DropdownMenu>

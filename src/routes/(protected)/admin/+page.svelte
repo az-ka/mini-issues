@@ -6,6 +6,7 @@
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import WhitelistSection from '$lib/components/admin/WhitelistSection.svelte';
 	import TrelloBoardsSection from '$lib/components/admin/TrelloBoardsSection.svelte';
+	import TelegramSection from '$lib/components/admin/TelegramSection.svelte';
 	import { ShieldCheck } from 'lucide-svelte';
 
 	const ctx = useClerkContext();
@@ -51,6 +52,10 @@
 
 	<div class="mt-10">
 		<TrelloBoardsSection />
+	</div>
+
+	<div class="mt-10">
+		<TelegramSection />
 	</div>
 
 	<div class="pb-8"></div>
