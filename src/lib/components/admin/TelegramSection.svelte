@@ -8,7 +8,7 @@
 	import { Info } from 'lucide-svelte';
 
 	const client = useConvexClient();
-	const settingsQuery = useQuery(api.notificationSettings.get, {});
+	const settingsQuery = useQuery(api.settings.get, {});
 
 	let saveError = $state('');
 	let isTesting = $state(false);
@@ -26,7 +26,7 @@
 	async function saveField(patch: { notifyOnNew?: boolean }) {
 		saveError = '';
 		try {
-			await client.mutation(api.notificationSettings.update, {
+			await client.mutation(api.settings.update, {
 				notifyOnNew,
 				...patch
 			});

@@ -12,7 +12,7 @@ export const get = query({
 		const identity = await ctx.auth.getUserIdentity();
 		if (!identity) return DEFAULTS;
 
-		const settings = await ctx.db.query('notificationSettings').first();
+		const settings = await ctx.db.query('settings').first();
 		return settings ?? DEFAULTS;
 	}
 });
@@ -26,11 +26,11 @@ export const update = mutation({
 		const identity = await ctx.auth.getUserIdentity();
 		if (!identity) throw new ConvexError('Not authenticated');
 
-		const existing = await ctx.db.query('notificationSettings').first();
+		const existing = await ctx.db.query('settings').first();
 		if (existing) {
 			await ctx.db.patch(existing._id, args);
 		} else {
-			await ctx.db.insert('notificationSettings', args);
+			await ctx.db.insert('settings', args);
 		}
 	}
 });

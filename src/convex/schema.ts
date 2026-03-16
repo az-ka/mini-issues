@@ -85,7 +85,7 @@ export default defineSchema({
 	}),
 
 	// Notification settings — singleton document (only one row ever)
-	notificationSettings: defineTable({
+	settings: defineTable({
 		notifyOnNew: v.boolean() // Telegram notif when new ticket sent to Trello
 	})
 });

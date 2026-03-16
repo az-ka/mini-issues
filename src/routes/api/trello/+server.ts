@@ -235,7 +235,7 @@ export const POST: RequestHandler = async ({ request, locals, url }) => {
 	// Step 6: Send Telegram notification (non-blocking, fire-and-forget)
 	(async () => {
 		try {
-			const notifSettings = await convex.query(api.notificationSettings.get, {});
+			const notifSettings = await convex.query(api.settings.get, {});
 			if (notifSettings?.notifyOnNew) {
 				const report = await convex.query(api.reports.getById, {
 					id: reportId as Id<'reports'>
