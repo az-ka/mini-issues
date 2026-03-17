@@ -31,6 +31,7 @@ export interface TelegramMessage {
 export async function sendTelegramMessage(msg: TelegramMessage): Promise<void> {
 	const token = env.TELEGRAM_BOT_TOKEN?.trim();
 	const chatId = env.TELEGRAM_CHAT_ID?.trim();
+	const threadId = env.TELEGRAM_THREAD_ID?.trim();
 
 	if (!token || !chatId) {
 		console.warn('[telegram] TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not set, skipping.');
@@ -43,6 +44,7 @@ export async function sendTelegramMessage(msg: TelegramMessage): Promise<void> {
 		parse_mode: 'HTML',
 		link_preview_options: { is_disabled: true }
 	};
+	if (threadId) body.message_thread_id = Number(threadId);
 	if (msg.replyMarkup) body.reply_markup = msg.replyMarkup;
 
 	const res = await fetch(`${TELEGRAM_API}/bot${token}/sendMessage`, {
