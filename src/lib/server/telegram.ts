@@ -88,11 +88,11 @@ export function buildNewTicketMessage(
 	const buttons: { text: string; url: string }[] = [];
 
 	if (ticket.cardUrl && isHttps(ticket.cardUrl))
-		buttons.push({ text: '↗ Buka Trello', url: ticket.cardUrl });
+		buttons.push({ text: 'Buka Trello', url: ticket.cardUrl });
 
 	if (appUrl && ticket.reportId) {
 		const ticketUrl = `${appUrl}/ticket/${ticket.reportId}`;
-		if (isHttps(ticketUrl)) buttons.push({ text: '↗ Buka Laporan', url: ticketUrl });
+		if (isHttps(ticketUrl)) buttons.push({ text: 'Buka Laporan', url: ticketUrl });
 	}
 
 	const replyMarkup = buttons.length > 0 ? { inline_keyboard: [buttons] } : undefined;
