@@ -4,19 +4,6 @@ const TELEGRAM_API = 'https://api.telegram.org';
 
 // ── Label mappings ──────────────────────────────────────────────────────────
 
-const TYPE_LABELS: Record<string, string> = {
-	bug: '🐛 Bug',
-	feature: '✨ Fitur Baru',
-	improvement: '⚡ Improvement'
-};
-
-const PRIORITY_LABELS: Record<string, string> = {
-	low: '🟢 Rendah',
-	medium: '🟡 Sedang',
-	high: '🔴 Tinggi',
-	critical: '🚨 Kritis'
-};
-
 // ── Types ───────────────────────────────────────────────────────────────────
 
 export interface TelegramMessage {
@@ -74,26 +61,27 @@ export function buildNewTicketMessage(
 	},
 	appUrl?: string
 ): TelegramMessage {
-	const typeLabel = TYPE_LABELS[ticket.type] ?? ticket.type;
-	const priorityLabel = ticket.priority
-		? (PRIORITY_LABELS[ticket.priority] ?? ticket.priority)
-		: null;
+	const priorityEmoji: Record<string, string> = {
+		low: '🟢',
+		medium: '🟡',
+		high: '🔴',
+		critical: '🚨'
+	};
 
-	const fields: string[] = [];
+	const emoji = ticket.priority ? (priorityEmoji[ticket.priority] ?? '🔵') : '🔵';
 
+	const meta: string[] = [];
 	if (ticket.ticketNumber)
-		fields.push(`No    : <code>MI-${String(ticket.ticketNumber).padStart(3, '0')}</code>`);
-	fields.push(`Judul : ${e(ticket.title)}`);
+		meta.push(`<code>No    : MI-${String(ticket.ticketNumber).padStart(3, '0')}</code>`);
+	if (ticket.module) meta.push(`<code>Modul : ${e(ticket.module)}</code>`);
+	if (ticket.reporterName) meta.push(`<code>Oleh  : ${e(ticket.reporterName)}</code>`);
 
-	const tipeLine = [typeLabel, priorityLabel].filter(Boolean).join(' · ');
-	fields.push(`Tipe  : ${tipeLine}`);
-
-	if (ticket.module) fields.push(`Modul : ${e(ticket.module)}`);
-	if (ticket.reporterName) fields.push(`Dari  : ${e(ticket.reporterName)}`);
-
-	const header = `🎫 <b>MINI ISSUES</b> · Tiket Baru`;
-	const separator = '─────────────────';
-	const text = [header, separator, ...fields].join('\n');
+	const text = [
+		`${emoji} <b>New Issue Reported</b>`,
+		``,
+		e(ticket.title),
+		...(meta.length ? [``, meta.join('\n')] : [])
+	].join('\n');
 
 	// Build inline keyboard buttons — Telegram only accepts HTTPS URLs
 	const isHttps = (u: string) => u.startsWith('https://');
