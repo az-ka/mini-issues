@@ -59,7 +59,7 @@
 </script>
 
 <div class="mx-auto min-h-dvh max-w-2xl px-4 py-8">
-	<PageHeader title="Detail Tiket" backHref="/history" backLabel="Kembali ke Riwayat" />
+	<PageHeader title="Detail Laporan" backHref="/history" backLabel="Kembali ke Riwayat" />
 
 	{#if reportQuery.isLoading}
 		<div class="flex flex-col gap-3 pt-4">
@@ -75,7 +75,7 @@
 			>
 				<TriangleAlert size={14} class="mt-0.5 shrink-0 text-danger" />
 				<p class="text-xs leading-relaxed text-danger">
-					Card Trello untuk tiket ini telah dihapus. Data tiket tetap tersimpan di sini.
+					Card Trello untuk laporan ini telah dihapus. Data laporan tetap tersimpan di sini.
 				</p>
 			</div>
 		{:else if trelloArchived}
@@ -85,7 +85,7 @@
 			>
 				<Archive size={14} class="mt-0.5 shrink-0 text-warning" />
 				<p class="text-xs leading-relaxed text-warning">
-					Card Trello untuk tiket ini telah diarsipkan. Data tiket tetap tersimpan di sini.
+					Card Trello untuk laporan ini telah diarsipkan. Data laporan tetap tersimpan di sini.
 				</p>
 			</div>
 		{/if}
@@ -97,7 +97,7 @@
 			>
 				<div class="flex items-center gap-2.5">
 					<Clock size={14} class="shrink-0 text-warning" />
-					<p class="text-xs text-warning">Tiket ini belum dikirim ke Trello.</p>
+					<p class="text-xs text-warning">Laporan ini belum dikirim ke Trello.</p>
 				</div>
 				<Button href="/report/preview/{report._id}" size="sm">Kirim Sekarang</Button>
 			</div>
@@ -295,7 +295,7 @@
 				<div class="flex items-start gap-2.5 rounded-xl border border-border bg-surface px-4 py-3">
 					<Lock size={14} class="mt-0.5 shrink-0 text-muted" />
 					<p class="text-xs leading-relaxed text-muted">
-						Tiket ini sudah dikirim dan tidak dapat diedit. Jika ada perubahan, silakan hubungi
+						Laporan ini sudah dikirim dan tidak dapat diedit. Jika ada perubahan, silakan hubungi
 						developer langsung melalui Whatsapp.
 					</p>
 				</div>
@@ -305,8 +305,8 @@
 		<div class="pb-8"></div>
 	{:else}
 		<NotFound
-			title="Tiket tidak ditemukan"
-			message="Tiket ini tidak ada atau kamu tidak punya akses."
+			title="Laporan tidak ditemukan"
+			message="Laporan ini tidak ada atau kamu tidak punya akses."
 			backHref="/history"
 			backLabel="Kembali ke Riwayat"
 		/>

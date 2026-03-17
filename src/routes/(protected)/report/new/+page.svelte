@@ -123,7 +123,7 @@
 <div class="mx-auto max-w-2xl px-4 pt-6 pb-16">
 	<PageHeader title="Buat Laporan Manual" backHref="/dashboard" />
 	<p class="-mt-4 mb-6 text-sm text-muted">
-		Isi formulir di bawah untuk membuat tiket tanpa bantuan AI.
+		Isi formulir di bawah untuk membuat laporan tanpa bantuan AI.
 	</p>
 
 	<form onsubmit={handleSubmit} class="mt-6 space-y-6">
@@ -352,9 +352,9 @@
 			<div class="rounded-xl border border-danger/20 bg-danger/5 px-4 py-3 text-sm text-danger">
 				⚠️ {errorMessage}
 				{#if savedReportId}
-					<span class="mt-1 block text-xs text-muted"
-						>Tiket sudah dibuat. Klik "Kirim ke Trello" lagi untuk mencoba ulang.</span
-					>
+					<span class="mt-1 block text-xs text-muted">
+						Laporan sudah dibuat. Klik "Kirim ke Trello" lagi untuk mencoba ulang.
+					</span>
 				{/if}
 				<button
 					type="button"

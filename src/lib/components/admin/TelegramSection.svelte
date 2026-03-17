@@ -75,17 +75,17 @@
 
 	<!-- Toggles -->
 	<div class="overflow-hidden rounded-xl border border-border bg-surface">
-		<!-- Tiket baru -->
+		<!-- Laporan baru -->
 		<div class="flex items-center gap-3 px-4 py-3.5">
 			<span class="h-2 w-2 shrink-0 rounded-full {notifyOnNew ? 'bg-success' : 'bg-muted/40'}"
 			></span>
 			<div class="min-w-0 flex-1">
-				<p class="text-sm font-medium text-foreground">Tiket baru dibuat</p>
-				<p class="text-xs text-muted">Notif dikirim saat tiket berhasil dikirim ke Trello.</p>
+				<p class="text-sm font-medium text-foreground">Laporan baru dibuat</p>
+				<p class="text-xs text-muted">Notif dikirim saat laporan berhasil dikirim ke Trello.</p>
 			</div>
 			<Toggle
 				bind:checked={notifyOnNew}
-				label="Toggle notifikasi tiket baru"
+				label="Toggle notifikasi laporan baru"
 				onchange={(val) => saveField({ notifyOnNew: val })}
 			/>
 			<Button variant="secondary" size="sm" loading={isTesting} onclick={handleTest}>Test</Button>

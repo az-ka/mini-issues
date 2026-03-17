@@ -10,7 +10,7 @@
 	</p>
 	<p class="mb-6 text-sm text-muted">
 		{$page.status === 404
-			? 'Tiket atau halaman yang kamu cari tidak ada atau sudah dihapus.'
+			? 'Laporan atau halaman yang kamu cari tidak ada atau sudah dihapus.'
 			: ($page.error?.message ?? 'Silakan coba lagi atau hubungi administrator.')}
 	</p>
 	<Button href="/dashboard">Kembali ke Dashboard</Button>

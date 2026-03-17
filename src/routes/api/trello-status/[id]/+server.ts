@@ -23,10 +23,10 @@ export const POST: RequestHandler = async ({ params, locals }) => {
 			id: params.id as Id<'reports'>
 		});
 	} catch {
-		error(404, 'Tiket tidak ditemukan');
+		error(404, 'Laporan tidak ditemukan');
 	}
 
-	if (!report) error(404, 'Tiket tidak ditemukan');
+	if (!report) error(404, 'Laporan tidak ditemukan');
 	if (!report.trelloCardId) return json({ skipped: true });
 
 	// Respect cooldown

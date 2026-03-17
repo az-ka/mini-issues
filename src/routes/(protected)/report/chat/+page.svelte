@@ -199,7 +199,7 @@
 					{
 						id: nextId++,
 						role: 'ai',
-						text: extracted.clean || 'Oke, ini draft tiketnya! Silakan cek di halaman preview ya.'
+						text: extracted.clean || 'Oke, ini draft laporannya! Silakan cek di halaman preview ya.'
 					}
 				];
 				reportId = id;
@@ -331,7 +331,9 @@
 					class="mx-auto mt-2 w-full max-w-sm rounded-2xl border border-accent/20 bg-accent/5 p-5 text-center"
 				>
 					<p class="mb-1 text-sm font-medium text-foreground">Informasi sudah lengkap!</p>
-					<p class="mb-4 text-xs text-muted">Cek dan edit draft tiket sebelum dikirim ke Trello.</p>
+					<p class="mb-4 text-xs text-muted">
+						Cek dan edit draft laporan sebelum dikirim ke Trello.
+					</p>
 					{#if reportId}
 						<Button href="/report/preview/{reportId}" size="lg" class="w-full">
 							Lanjut ke Review
@@ -356,7 +358,7 @@
 		<div class="mb-4 h-px bg-border"></div>
 		{#if isChatDone}
 			<p class="text-center text-xs text-muted">
-				Sesi chat selesai. Lanjut ke preview tiket di atas.
+				Sesi chat selesai. Lanjut ke preview laporan di atas.
 			</p>
 		{:else}
 			<div class="flex items-end gap-2">
@@ -380,7 +382,7 @@
 				</Button>
 			</div>
 			<p class="mt-2 text-center text-xs text-muted/60">
-				Tulis dengan bebas — AI yang akan merapikannya jadi tiket.
+				Tulis dengan bebas — AI yang akan merapikannya jadi laporan.
 			</p>
 		{/if}
 	</div>
@@ -393,7 +395,7 @@
 	onclose={() => (showConfirmReset = false)}
 >
 	{#if isDraftUnsent}
-		Draft tiket kamu belum dikirim ke Trello. Jika kamu mulai sesi baru, draft ini tetap tersimpan
+		Draft laporan kamu belum dikirim ke Trello. Jika kamu mulai sesi baru, draft ini tetap tersimpan
 		dan bisa diakses di <strong class="text-foreground">Riwayat</strong>.
 	{:else}
 		Semua pesan di sesi ini akan dihapus dan kamu akan mulai dari awal. Tindakan ini tidak bisa

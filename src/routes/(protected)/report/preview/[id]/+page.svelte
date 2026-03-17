@@ -130,7 +130,7 @@
 				throw new Error(err.message || 'Gagal mengirim ke Trello.');
 			}
 
-			toast.success('Tiket berhasil dikirim ke Trello!');
+			toast.success('Laporan berhasil dikirim ke Trello!');
 			await goto(`/report/success/${reportId}`);
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : 'Gagal mengirim ke Trello. Coba lagi.');
@@ -141,7 +141,7 @@
 </script>
 
 <div class="mx-auto max-w-2xl px-4 py-8">
-	<PageHeader title="Preview & Edit Tiket" backHref="/history" backLabel="Kembali" />
+	<PageHeader title="Preview & Edit Laporan" backHref="/history" backLabel="Kembali" />
 
 	{#if reportQuery.isLoading}
 		<div class="flex flex-col gap-3 pt-4">
@@ -151,7 +151,7 @@
 		</div>
 	{:else if reportQuery.data}
 		<p class="mb-6 text-sm text-muted">
-			Periksa dan edit tiket di bawah sebelum dikirim ke Trello. Semua field bisa diubah.
+			Periksa dan edit laporan di bawah sebelum dikirim ke Trello. Semua field bisa diubah.
 		</p>
 
 		<div class="flex flex-col gap-5">
@@ -400,6 +400,6 @@
 {#if !reportQuery.isLoading && !reportQuery.data}
 	<NotFound
 		title="Draft tidak ditemukan"
-		message="Draft tiket ini tidak ada atau kamu tidak punya akses."
+		message="Draft laporan ini tidak ada atau kamu tidak punya akses."
 	/>
 {/if}

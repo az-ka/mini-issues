@@ -49,15 +49,17 @@
 
 			<!-- Title -->
 			<div class="mb-6 text-center">
-				<h1 class="text-xl font-bold text-foreground">Tiket berhasil dikirim!</h1>
+				<h1 class="text-xl font-bold text-foreground">Laporan berhasil dikirim!</h1>
 				<p class="mt-1.5 text-sm text-muted">
-					Tiketmu sudah masuk ke Trello dan siap dikerjakan oleh tim developer.
+					Laporanmu sudah masuk ke Trello dan siap dikerjakan oleh tim developer.
 				</p>
 			</div>
 
 			<!-- Ticket summary -->
 			<div class="mb-6 rounded-2xl border border-border bg-surface p-4">
-				<p class="mb-3 text-xs font-medium tracking-wider text-muted uppercase">Ringkasan Tiket</p>
+				<p class="mb-3 text-xs font-medium tracking-wider text-muted uppercase">
+					Ringkasan Laporan
+				</p>
 
 				<div class="mb-2 flex flex-wrap items-center gap-2">
 					<span class="font-mono text-xs font-semibold text-accent">{ticketId}</span>
@@ -82,7 +84,8 @@
 
 			<!-- Actions -->
 			<div class="flex flex-col gap-3">
-				<Button size="lg" class="w-full" href={`/ticket/${report._id}`}>Lihat Detail Tiket</Button>
+				<Button size="lg" class="w-full" href={`/ticket/${report._id}`}>Lihat Detail Laporan</Button
+				>
 
 				{#if report.trelloCardUrl}
 					<Button
@@ -105,8 +108,8 @@
 		</div>
 	{:else}
 		<NotFound
-			title="Tiket tidak ditemukan"
-			message="Tiket ini tidak ada atau kamu tidak punya akses."
+			title="Laporan tidak ditemukan"
+			message="Laporan ini tidak ada atau kamu tidak punya akses."
 		/>
 	{/if}
 </div>

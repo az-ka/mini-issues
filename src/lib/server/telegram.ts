@@ -104,7 +104,7 @@ export function buildNewTicketMessage(
 
 	if (appUrl && ticket.reportId) {
 		const ticketUrl = `${appUrl}/ticket/${ticket.reportId}`;
-		if (isHttps(ticketUrl)) buttons.push({ text: '↗ Buka Tiket', url: ticketUrl });
+		if (isHttps(ticketUrl)) buttons.push({ text: '↗ Buka Laporan', url: ticketUrl });
 	}
 
 	const replyMarkup = buttons.length > 0 ? { inline_keyboard: [buttons] } : undefined;
